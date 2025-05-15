@@ -5,7 +5,7 @@ import * as path from 'path';
 let firebaseAccount: any;
 
 const secretPath = '/etc/secrets/credentials.json';
-const localPath = path.resolve(__dirname, './credentials.json');
+const localPath = path.resolve(process.cwd(), './src/configs/credentials.json');
 
 if (fs.existsSync(secretPath)) {
   // 👉 Environnement Render

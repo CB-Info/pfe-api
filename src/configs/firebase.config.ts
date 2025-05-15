@@ -1,5 +1,21 @@
 import * as admin from 'firebase-admin';
-import * as firebaseAccount from './credentials.json';
+import * as fs from 'fs';
+import * as path from 'path';
+
+let firebaseAccount: any;
+
+const secretPath = '/etc/secrets/credentials.json';
+const localPath = path.resolve(__dirname, './credentials.json');
+
+if (fs.existsSync(secretPath)) {
+  // 👉 Environnement Render
+  firebaseAccount = JSON.parse(fs.readFileSync(secretPath, 'utf8'));
+} else if (fs.existsSync(localPath)) {
+  // 👉 Environnement local
+  firebaseAccount = JSON.parse(fs.readFileSync(localPath, 'utf8'));
+} else {
+  throw new Error('❌ credentials.json introuvable dans aucun environnement.');
+}
 
 const firebaseParams = {
   type: firebaseAccount.type,

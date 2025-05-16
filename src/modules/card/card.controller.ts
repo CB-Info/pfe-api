@@ -66,7 +66,10 @@ export class CardController {
   @Delete(':id/dishes/:dishId')
   @HttpCode(HttpStatus.OK)
   async removeDish(@Param() params: any): Promise<Response<Card>> {
-    const response = await this.cardService.removeDish(params.id, params.dishId);
+    const response = await this.cardService.removeDish(
+      params.id,
+      params.dishId,
+    );
 
     return { error: '', data: response };
   }

@@ -37,7 +37,7 @@ export class OrderController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<Order>> {
+  async findOne(@Param() params: any): Promise<Response<Order>> {
     const response = await this.orderService.findOne(params.id);
 
     return { error: '', data: response };

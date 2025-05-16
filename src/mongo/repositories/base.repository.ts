@@ -52,7 +52,7 @@ class BaseRepository<T extends Document> {
     return this.findOneBy({ _id }, params);
   }
 
-  async deleteOnyBy(condition: FilterQuery<T>): Promise<boolean> {
+  async deleteOneBy(condition: FilterQuery<T>): Promise<boolean> {
     try {
       return (await this.Model.deleteOne(condition)).deletedCount > 0;
     } catch {

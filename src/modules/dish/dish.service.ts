@@ -122,7 +122,7 @@ export class DishService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.dishRepository.deleteOnyBy({ _id: id });
+      const isDeleted = await this.dishRepository.deleteOneBy({ _id: id });
 
       if (!isDeleted) {
         throw new NotFoundException(`Dish with ID ${id} not found`);

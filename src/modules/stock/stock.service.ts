@@ -84,7 +84,7 @@ export class StockService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.stockRepository.deleteOnyBy({ _id: id });
+      const isDeleted = await this.stockRepository.deleteOneBy({ _id: id });
 
       if (!isDeleted) {
         throw new NotFoundException(`Order with ID ${id} not found`);

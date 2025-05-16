@@ -6,25 +6,22 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CardDTO } from 'src/dto/card.dto';
-import { Card } from 'src/mongo/models/card.model';
-import { DataType } from 'src/mongo/repositories/base.repository';
+import { CardResponseDTO } from 'src/dto/response/card.response.dto';
 import { CardRepository } from 'src/mongo/repositories/card.repository';
 
 @Injectable()
 export class CardService {
   constructor(private readonly cardRepository: CardRepository) {}
 
-  async createOne(cardData: CardDTO): Promise<Card> {
+  async createOne(cardData: CardDTO): Promise<CardResponseDTO> {
     try {
-      const response = await this.cardRepository.insert({
+      const created = await this.cardRepository.insert({
         name: cardData.name,
-        dishesId: cardData.dishesId,
+        dishesId: cardData.dishesId.map((id) => new Types.ObjectId(id)),
         isActive: cardData.isActive,
       });
-
-      return response as Card;
+      return this.toResponseDTO(created);
     } catch (e) {
-      console.log(e);
       if (e.name === 'ValidationError') {
         throw new BadRequestException(e.message);
       }
@@ -32,128 +29,114 @@ export class CardService {
     }
   }
 
-  async findAll(): Promise<Card[]> {
+  async findAll(): Promise<CardResponseDTO[]> {
     try {
-      const response = await this.cardRepository.findAll();
-
-      return response as Card[];
+      const cards = await this.cardRepository.findAll({
+        populate: ['dishesId'],
+      });
+      return cards.map((c) => this.toResponseDTO(c));
     } catch (e) {
-      console.log(e);
       throw new InternalServerErrorException(e.message);
     }
   }
 
-  async findOne(id: string): Promise<Card> {
+  async findOne(id: string): Promise<CardResponseDTO> {
     try {
-      const response = await this.cardRepository.findOneBy({ _id: id });
-
-      if (!response) {
-        throw new NotFoundException(`Card with ID ${id} not found`);
-      }
-
-      return response as Card;
-    } catch (e) {
-      console.log(e);
-      if (e.name == 'CastError') {
-        throw new BadRequestException('Invalid ID format');
-      }
-      throw new InternalServerErrorException(e.message);
-    }
-  }
-
-  async updateOne(id: string, cardData: DataType): Promise<Card> {
-    try {
-      const isUpdate = await this.cardRepository.updateOneBy(
+      const card = await this.cardRepository.findOneBy(
         { _id: id },
-        cardData,
+        { populate: ['dishesId'] },
       );
-
-      if (!isUpdate) {
-        throw new NotFoundException(`Card with ID ${id} not found`);
-      }
-
-      const response = await this.findOne(id);
-
-      return response as Card;
+      if (!card) throw new NotFoundException(`Carte ${id} introuvable`);
+      return this.toResponseDTO(card);
     } catch (e) {
-      console.log(e);
-      if (e.message == 'CastError') {
-        throw new BadRequestException('Invalid ID format');
+      if (e.name === 'CastError') {
+        throw new BadRequestException('Identifiant invalide');
       }
       throw new InternalServerErrorException(e.message);
     }
   }
 
-  async addDish(cardId: string, newDishId: string): Promise<Card> {
+  async updateOne(id: string, cardData: CardDTO): Promise<CardResponseDTO> {
     try {
-      const card = await this.findOne(cardId);
-
-      if (!card) {
-        throw new NotFoundException(`Card with ID ${cardId} not found`);
-      }
-
-      const objectIdNewDishId = new Types.ObjectId(newDishId);
-
-      if (
-        card.dishesId
-          .map((id) => id.toString())
-          .includes(objectIdNewDishId.toString())
-      ) {
-        throw new Error(`Dish with ID ${newDishId} is already in the card`);
-      }
-
-      const isUpdated = await this.cardRepository.pushArray(
-        { _id: cardId },
-        { dishesId: objectIdNewDishId },
+      const isUpdated = await this.cardRepository.updateOneBy(
+        { _id: id },
+        {
+          name: cardData.name,
+          dishesId: cardData.dishesId.map((i) => new Types.ObjectId(i)),
+          isActive: cardData.isActive,
+        },
       );
-
       if (!isUpdated) {
-        throw new Error('Unable to add dish to the card');
+        throw new NotFoundException(`Carte ${id} introuvable`);
       }
-
-      return await this.findOne(cardId);
-    } catch (e) {
-      console.log(e);
-      if (e.message.includes('already in the card')) {
-        throw new BadRequestException(e.message);
-      }
-      throw new InternalServerErrorException(e.message);
-    }
-  }
-
-  async removeDish(cardId: string, dishIdToRemove: string): Promise<Card> {
-    try {
-      const objectIdDishIdToRemove = new Types.ObjectId(dishIdToRemove);
-
-      const isUpdated = await this.cardRepository.pullArray(
-        { _id: cardId },
-        { dishesId: objectIdDishIdToRemove },
+      const reloaded = await this.cardRepository.findOneBy(
+        { _id: id },
+        { populate: ['dishesId'] },
       );
-
-      if (!isUpdated) {
-        throw new Error('Unable to remove dish from the card');
+      if (!reloaded) {
+        throw new InternalServerErrorException(
+          `Erreur de rechargement de la carte ${id}`,
+        );
       }
-
-      return await this.findOne(cardId);
+      return this.toResponseDTO(reloaded);
     } catch (e) {
-      console.log(e);
-      if (e.message.includes('Unable to remove dish')) {
-        throw new BadRequestException(e.message);
+      if (e.name === 'CastError') {
+        throw new BadRequestException('Identifiant invalide');
       }
       throw new InternalServerErrorException(e.message);
     }
   }
 
-  async deleteOne(id: string) {
-    try {
-      const isDeleted = await this.cardRepository.deleteOnyBy({ _id: id });
-
-      if (!isDeleted) {
-        throw new NotFoundException(`Card with ID ${id} not found`);
-      }
-    } catch (e) {
-      console.log(e);
-      throw new InternalServerErrorException(e.message);
+  async addDish(cardId: string, newDishId: string): Promise<CardResponseDTO> {
+    const card = await this.findOne(cardId);
+    if (card.dishes.some((d) => d._id === newDishId)) {
+      throw new BadRequestException(`Plat ${newDishId} déjà présent`);
     }
+    await this.cardRepository.pushArray(
+      { _id: cardId },
+      { dishesId: new Types.ObjectId(newDishId) },
+    );
+    return this.findOne(cardId);
+  }
+
+  async removeDish(cardId: string, dishId: string): Promise<CardResponseDTO> {
+    await this.cardRepository.pullArray(
+      { _id: cardId },
+      { dishesId: new Types.ObjectId(dishId) },
+    );
+    return this.findOne(cardId);
+  }
+
+  async deleteOne(id: string): Promise<void> {
+    const deleted = await this.cardRepository.deleteOneBy({ _id: id });
+    if (!deleted) throw new NotFoundException(`Carte ${id} introuvable`);
+  }
+
+  /** Convertit un Document (avec dishesId peuplé) en CardResponseDTO */
+  private toResponseDTO(card: any): CardResponseDTO {
+    return {
+      _id: card._id.toString(),
+      name: card.name,
+      dishes: card.dishesId.map((dish: any) => ({
+        _id: dish._id.toString(),
+        name: dish.name,
+        ingredients: dish.ingredients.map((ing: any) => ({
+          ingredientRef: {
+            _id: ing.ingredient?._id.toString(),
+            name: ing.ingredient?.name,
+          },
+          unity: ing.unity,
+          quantity: ing.quantity,
+        })),
+        price: dish.price,
+        description: dish.description,
+        category: dish.category,
+        timeCook: dish.timeCook,
+        isAvailable: dish.isAvailable,
+      })),
+      isActive: card.isActive,
+      dateOfCreation: card.dateOfCreation,
+      dateLastModified: card.dateLastModified,
+    };
   }
 }

@@ -88,7 +88,7 @@ export class IngredientService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.ingredientRepository.deleteOnyBy({
+      const isDeleted = await this.ingredientRepository.deleteOneBy({
         _id: id,
       });
 

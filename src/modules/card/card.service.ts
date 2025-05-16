@@ -34,7 +34,9 @@ export class CardService {
 
   async findAll(): Promise<Card[]> {
     try {
-      const response = await this.cardRepository.findAll();
+      const response = await this.cardRepository.findAll({
+        populate: ['dishesId'],
+      });
 
       return response as Card[];
     } catch (e) {
@@ -45,7 +47,10 @@ export class CardService {
 
   async findOne(id: string): Promise<Card> {
     try {
-      const response = await this.cardRepository.findOneBy({ _id: id });
+      const response = await this.cardRepository.findOneBy(
+        { _id: id },
+        { populate: ['dishesId'] },
+      );
 
       if (!response) {
         throw new NotFoundException(`Card with ID ${id} not found`);

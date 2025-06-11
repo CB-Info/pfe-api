@@ -92,7 +92,7 @@ export class RestaurantTableService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.restaurantTableRepository.deleteOnyBy({
+      const isDeleted = await this.restaurantTableRepository.deleteOneBy({
         _id: id,
       });
 

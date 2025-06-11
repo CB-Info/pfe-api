@@ -37,7 +37,7 @@ export class StockController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<Stock>> {
+  async findOne(@Param() params: any): Promise<Response<Stock>> {
     const response = await this.stockService.findOne(params.id);
 
     return { error: '', data: response };

@@ -142,7 +142,7 @@ export class CardService {
       return await this.findOne(cardId);
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove dish')) {
+      if (e.message.includes('Unable to remove dish from the card')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -151,7 +151,7 @@ export class CardService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.cardRepository.deleteOnyBy({ _id: id });
+      const isDeleted = await this.cardRepository.deleteOneBy({ _id: id });
 
       if (!isDeleted) {
         throw new NotFoundException(`Card with ID ${id} not found`);

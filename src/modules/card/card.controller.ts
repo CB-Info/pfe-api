@@ -38,7 +38,7 @@ export class CardController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<Card>> {
+  async findOne(@Param() params: any): Promise<Response<Card>> {
     const response = await this.cardService.findOne(params.id);
 
     return { error: '', data: response };

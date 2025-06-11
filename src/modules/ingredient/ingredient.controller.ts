@@ -55,7 +55,7 @@ export class IngredientController {
   @Get(':id')
   @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<Ingredient>> {
+  async findOne(@Param() params: any): Promise<Response<Ingredient>> {
     const response = await this.ingredientService.findOne(params.id);
 
     return { error: '', data: response };

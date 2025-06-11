@@ -42,7 +42,7 @@ export class RestaurantTableController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<RestaurantTable>> {
+  async findOne(@Param() params: any): Promise<Response<RestaurantTable>> {
     const response = await this.restaurantTableService.findOne(params.id);
 
     return { error: '', data: response };

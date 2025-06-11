@@ -49,7 +49,7 @@ export class OrderService {
       const response = await this.orderRepository.findOneBy({ _id: id });
 
       if (!response) {
-        throw new NotFoundException(`Card with ID ${id} not found`);
+        throw new NotFoundException(`Order with ID ${id} not found`);
       }
 
       return response as Order;
@@ -78,7 +78,7 @@ export class OrderService {
       return response as Order;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove dish')) {
+      if (e.message.includes('Unable to update order')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -87,7 +87,7 @@ export class OrderService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.orderRepository.deleteOnyBy({ _id: id });
+      const isDeleted = await this.orderRepository.deleteOneBy({ _id: id });
 
       if (!isDeleted) {
         throw new NotFoundException(`Order with ID ${id} not found`);

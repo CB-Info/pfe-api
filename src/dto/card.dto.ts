@@ -1,4 +1,10 @@
-import { IsString, IsBoolean, IsArray, ArrayNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsBoolean,
+  IsArray,
+  ArrayNotEmpty,
+  IsMongoId,
+} from 'class-validator';
 
 export class CardDTO {
   @IsString()
@@ -6,7 +12,7 @@ export class CardDTO {
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsString({ each: true })
+  @IsMongoId({ each: true })
   dishesId: string[];
 
   @IsBoolean()

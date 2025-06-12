@@ -10,7 +10,6 @@ import {
   Patch,
   HttpStatus,
   HttpCode,
-  NotFoundException,
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardDTO } from 'src/dto/card.dto';

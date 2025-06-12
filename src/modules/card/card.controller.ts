@@ -13,8 +13,9 @@ import {
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardDTO } from 'src/dto/card.dto';
-import { CardResponseDTO } from 'src/dto/response/card.response.dto';
 import { Response } from 'src/utils/response';
+import { Card } from 'src/mongo/models/card.model';
+import { DataType } from 'src/mongo/repositories/base.repository';
 
 @Controller('cards')
 export class CardController {
@@ -22,16 +23,14 @@ export class CardController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createOne(
-    @Body() cardData: CardDTO,
-  ): Promise<Response<CardResponseDTO>> {
+  async createOne(@Body() cardData: CardDTO): Promise<Response<Card>> {
     const dto = await this.cardService.createOne(cardData);
     return { error: '', data: dto };
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAll(): Promise<Response<CardResponseDTO[]>> {
+  async findAll(): Promise<Response<Card[]>> {
     const dtos = await this.cardService.findAll();
     return { error: '', data: dtos };
   }
@@ -48,8 +47,8 @@ export class CardController {
   @HttpCode(HttpStatus.OK)
   async updateOne(
     @Param('id') id: string,
-    @Body() updateData: CardDTO,
-  ): Promise<Response<CardResponseDTO>> {
+    @Body() updateData: DataType,
+  ): Promise<Response<Card>> {
     const dto = await this.cardService.updateOne(id, updateData);
     return { error: '', data: dto };
   }
@@ -59,7 +58,7 @@ export class CardController {
   async addDish(
     @Param('id') id: string,
     @Param('dishId') dishId: string,
-  ): Promise<Response<CardResponseDTO>> {
+  ): Promise<Response<Card>> {
     const dto = await this.cardService.addDish(id, dishId);
     return { error: '', data: dto };
   }
@@ -69,7 +68,7 @@ export class CardController {
   async removeDish(
     @Param('id') id: string,
     @Param('dishId') dishId: string,
-  ): Promise<Response<CardResponseDTO>> {
+  ): Promise<Response<Card>> {
     const dto = await this.cardService.removeDish(id, dishId);
     return { error: '', data: dto };
   }

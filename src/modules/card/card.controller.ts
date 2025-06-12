@@ -1,3 +1,4 @@
+// src/controllers/card.controller.ts
 import {
   Controller,
   Get,
@@ -9,12 +10,12 @@ import {
   Patch,
   HttpStatus,
   HttpCode,
+  NotFoundException,
 } from '@nestjs/common';
 import { CardService } from './card.service';
-import { Card } from 'src/mongo/models/card.model';
 import { CardDTO } from 'src/dto/card.dto';
+import { CardResponseDTO } from 'src/dto/response/card.response.dto';
 import { Response } from 'src/utils/response';
-import { DataType } from 'src/mongo/repositories/base.repository';
 
 @Controller('cards')
 export class CardController {
@@ -22,18 +23,18 @@ export class CardController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createOne(@Body() cardData: CardDTO): Promise<Response<Card>> {
-    const response = await this.cardService.createOne(cardData);
-
-    return { error: '', data: response };
+  async createOne(
+    @Body() cardData: CardDTO,
+  ): Promise<Response<CardResponseDTO>> {
+    const dto = await this.cardService.createOne(cardData);
+    return { error: '', data: dto };
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAll(): Promise<Response<Card[]>> {
-    const response = await this.cardService.findAll();
-
-    return { error: '', data: response };
+  async findAll(): Promise<Response<CardResponseDTO[]>> {
+    const dtos = await this.cardService.findAll();
+    return { error: '', data: dtos };
   }
 
   @Get(':id')
@@ -47,36 +48,36 @@ export class CardController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   async updateOne(
-    @Param() params: any,
-    @Body() updateData: DataType,
-  ): Promise<Response<Card>> {
-    const response = await this.cardService.updateOne(params.id, updateData);
-
-    return { error: '', data: response };
+    @Param('id') id: string,
+    @Body() updateData: CardDTO,
+  ): Promise<Response<CardResponseDTO>> {
+    const dto = await this.cardService.updateOne(id, updateData);
+    return { error: '', data: dto };
   }
 
   @Patch(':id/dishes/:dishId')
   @HttpCode(HttpStatus.OK)
-  async addDish(@Param() params: any): Promise<Response<Card>> {
-    const response = await this.cardService.addDish(params.id, params.dishId);
-
-    return { error: '', data: response };
+  async addDish(
+    @Param('id') id: string,
+    @Param('dishId') dishId: string,
+  ): Promise<Response<CardResponseDTO>> {
+    const dto = await this.cardService.addDish(id, dishId);
+    return { error: '', data: dto };
   }
 
   @Delete(':id/dishes/:dishId')
   @HttpCode(HttpStatus.OK)
-  async removeDish(@Param() params: any): Promise<Response<Card>> {
-    const response = await this.cardService.removeDish(
-      params.id,
-      params.dishId,
-    );
-
-    return { error: '', data: response };
+  async removeDish(
+    @Param('id') id: string,
+    @Param('dishId') dishId: string,
+  ): Promise<Response<CardResponseDTO>> {
+    const dto = await this.cardService.removeDish(id, dishId);
+    return { error: '', data: dto };
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteOne(@Param() params: any) {
-    await this.cardService.deleteOne(params.id);
+  async deleteOne(@Param('id') id: string): Promise<void> {
+    await this.cardService.deleteOne(id);
   }
 }

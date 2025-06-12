@@ -79,7 +79,7 @@ export class IngredientService {
       return response as Ingredient;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove dish')) {
+      if (e.message.includes('Unable to remove ingredient')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -93,7 +93,7 @@ export class IngredientService {
       });
 
       if (!isDeleted) {
-        throw new NotFoundException(`Dish with ID ${id} not found`);
+        throw new NotFoundException(`Ingredient with ID ${id} not found`);
       }
     } catch (e) {
       console.log(e);

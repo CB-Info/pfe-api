@@ -10,7 +10,6 @@ import {
   Patch,
   HttpStatus,
   HttpCode,
-  NotFoundException,
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardDTO } from 'src/dto/card.dto';
@@ -39,10 +38,10 @@ export class CardController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param('id') id: string): Promise<Response<CardResponseDTO>> {
-    const dto = await this.cardService.findOne(id);
-    if (!dto) throw new NotFoundException(`Carte ${id} introuvable`);
-    return { error: '', data: dto };
+  async findOne(@Param() params: any): Promise<Response<Card>> {
+    const response = await this.cardService.findOne(params.id);
+
+    return { error: '', data: response };
   }
 
   @Put(':id')

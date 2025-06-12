@@ -75,7 +75,7 @@ export class StockService {
       return response as Stock;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove dish')) {
+      if (e.message.includes('Unable to update stock')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -87,7 +87,7 @@ export class StockService {
       const isDeleted = await this.stockRepository.deleteOneBy({ _id: id });
 
       if (!isDeleted) {
-        throw new NotFoundException(`Order with ID ${id} not found`);
+        throw new NotFoundException(`Stock with ID ${id} not found`);
       }
     } catch (e) {
       console.log(e);

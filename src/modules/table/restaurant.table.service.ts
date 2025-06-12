@@ -83,7 +83,7 @@ export class RestaurantTableService {
       return response as RestaurantTable;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove dish')) {
+      if (e.message.includes('Unable to update table')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -97,7 +97,7 @@ export class RestaurantTableService {
       });
 
       if (!isDeleted) {
-        throw new NotFoundException(`Order with ID ${id} not found`);
+        throw new NotFoundException(`Table with ID ${id} not found`);
       }
     } catch (e) {
       console.log(e);

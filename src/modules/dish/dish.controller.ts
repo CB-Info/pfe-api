@@ -155,6 +155,8 @@ export class DishController {
       category: dish.category,
       timeCook: dish.timeCook,
       isAvailable: dish.isAvailable,
+      dateOfCreation: dish.dateOfCreation,
+      dateLastModified: dish.dateLastModified,
     };
   }
 }

@@ -37,6 +37,13 @@ export class DishResponseDTO {
 
   @IsBoolean()
   isAvailable: boolean;
+
+  @IsString()
+  dateOfCreation: string;
+
+  @IsOptional()
+  @IsString()
+  dateLastModified?: string;
 }
 
 export class DishIngredientResponseDTO {

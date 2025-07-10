@@ -24,7 +24,7 @@ export class IngredientService {
         name: ingredientData.name,
       });
 
-      return response as Ingredient;
+      return response.toObject({ versionKey: false }) as Ingredient;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

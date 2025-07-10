@@ -49,7 +49,7 @@ export class DishService {
         isAvailable: dishData.isAvailable,
       });
 
-      return response as Dish;
+      return response.toObject({ versionKey: false }) as Dish;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

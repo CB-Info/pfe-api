@@ -48,7 +48,6 @@ class BaseRepository<T extends Document> {
   }
 
   async findOneById(_id: string, params?: AdditionalParams): Promise<T | null> {
-    // @ts-expect-error Object with id
     return this.findOneBy({ _id }, params);
   }
 

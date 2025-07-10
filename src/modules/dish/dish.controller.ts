@@ -136,7 +136,7 @@ export class DishController {
 
   private toResponseDto(dish: Dish): DishResponseDTO {
     return {
-      _id: dish._id,
+      _id: dish._id.toString(),
       name: dish.name,
       ingredients: dish.ingredients.map((ingredient) => {
         const ingredientData = ingredient.ingredientId as any;

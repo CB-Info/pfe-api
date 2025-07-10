@@ -23,7 +23,7 @@ export class RestaurantTableService {
         number: restaurantTableData.number,
       });
 
-      return response as RestaurantTable;
+      return response.toObject({ versionKey: false }) as RestaurantTable;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

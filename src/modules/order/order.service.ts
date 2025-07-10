@@ -23,7 +23,7 @@ export class OrderService {
         tips: orderData.tips,
       });
 
-      return response as Order;
+      return response.toObject({ versionKey: false }) as Order;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

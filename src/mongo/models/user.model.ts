@@ -2,6 +2,15 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import DateBeautifier from '../../utils/date.beautifier';
 
+export enum UserRole {
+  CUSTOMER = 'customer',
+  WAITER = 'waiter',
+  KITCHEN_STAFF = 'kitchen_staff',
+  MANAGER = 'manager',
+  OWNER = 'owner',
+  ADMIN = 'admin'
+}
+
 @Schema()
 export class User extends Document {
   @Prop({ required: true, unique: true, trim: true })
@@ -15,6 +24,20 @@ export class User extends Document {
 
   @Prop({ required: true, trim: true })
   lastname: string;
+
+  @Prop({
+    type: String,
+    enum: Object.values(UserRole),
+    required: true,
+    default: UserRole.CUSTOMER
+  })
+  role: UserRole;
+
+  @Prop({ required: false, trim: true })
+  phoneNumber?: string;
+
+  @Prop({ required: false, default: true })
+  isActive: boolean;
 
   @Prop({
     type: String,

@@ -28,7 +28,8 @@ export class FixturesService {
       name: faker.commerce.productName(),
     }));
 
-    const ingredients = await this.ingredientModel.insertMany(ingredientFixtures);
+    const ingredients =
+      await this.ingredientModel.insertMany(ingredientFixtures);
     const ingredientsId = ingredients.map((ingredient) =>
       ingredient._id.toString(),
     );

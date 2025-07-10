@@ -12,7 +12,7 @@ export enum DishCategory {
   SOUPS = 'SOUPS',
   SIDE_DISHES = 'SIDE_DISHES',
   DESSERTS = 'DESSERTS',
-  BEVERAGES = 'BEVERAGES'
+  BEVERAGES = 'BEVERAGES',
 }
 
 export enum DishIngredientUnity {

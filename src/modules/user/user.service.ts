@@ -32,14 +32,14 @@ export class UserService {
 
       const { localId: firebaseId } = result.data;
 
-      const savedUser = (await this.userRepository.insert({
+      const savedUser = await this.userRepository.insert({
         email: email,
         firstname: firstname,
         lastname: lastname,
         firebaseId: firebaseId,
-      })) as User;
+      });
 
-      return await this.userRepository.findOneById(savedUser._id);
+      return await this.userRepository.findOneById(savedUser._id.toString());
     } catch (e) {
       console.log(e);
       throw new BadRequestException();

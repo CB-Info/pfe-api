@@ -20,7 +20,7 @@ export class StockService {
         ingredients: stockData.ingredients,
       });
 
-      return response as Stock;
+      return response.toObject({ versionKey: false }) as Stock;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

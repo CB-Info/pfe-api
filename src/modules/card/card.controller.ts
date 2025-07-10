@@ -10,18 +10,21 @@ import {
   Patch,
   HttpStatus,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardDTO } from 'src/dto/card.dto';
 import { Response } from 'src/utils/response';
 import { Card } from 'src/mongo/models/card.model';
 import { DataType } from 'src/mongo/repositories/base.repository';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 
 @Controller('cards')
 export class CardController {
   constructor(private readonly cardService: CardService) {}
 
   @Post()
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.CREATED)
   async createOne(@Body() cardData: CardDTO): Promise<Response<Card>> {
     const dto = await this.cardService.createOne(cardData);
@@ -29,6 +32,7 @@ export class CardController {
   }
 
   @Get()
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async findAll(): Promise<Response<Card[]>> {
     const dtos = await this.cardService.findAll();
@@ -36,6 +40,7 @@ export class CardController {
   }
 
   @Get(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async findOne(@Param() params: any): Promise<Response<Card>> {
     const response = await this.cardService.findOne(params.id);
@@ -44,6 +49,7 @@ export class CardController {
   }
 
   @Put(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async updateOne(
     @Param('id') id: string,
@@ -54,6 +60,7 @@ export class CardController {
   }
 
   @Patch(':id/dishes/:dishId')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async addDish(
     @Param('id') id: string,
@@ -64,6 +71,7 @@ export class CardController {
   }
 
   @Delete(':id/dishes/:dishId')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async removeDish(
     @Param('id') id: string,
@@ -74,6 +82,7 @@ export class CardController {
   }
 
   @Delete(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOne(@Param('id') id: string): Promise<void> {
     await this.cardService.deleteOne(id);

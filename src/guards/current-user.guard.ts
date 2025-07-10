@@ -10,7 +10,7 @@ export class CurrentUserGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    if (request.params.userId == request.user._id) {
+    if (request.params.userId === request.user._id.toString()) {
       return true;
     }
 

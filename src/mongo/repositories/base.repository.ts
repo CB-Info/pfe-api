@@ -41,7 +41,7 @@ class BaseRepository<T extends Document> {
         )
         .populate((params?.populate || []).join(' '));
 
-      return finedObject.toObject({ versionKey: false }) || null;
+      return finedObject ? finedObject.toObject({ versionKey: false }) : null;
     } catch (e) {
       return null;
     }

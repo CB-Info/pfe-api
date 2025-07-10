@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { CurrentUserGuard } from 'src/guards/current-user.guard';
 import {
   ApiSecurity,
   ApiTags,
@@ -60,7 +61,7 @@ export class UserController {
   }
 
   @Patch(':userId')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, CurrentUserGuard)
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a user' })

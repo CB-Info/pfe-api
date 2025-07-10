@@ -8,12 +8,14 @@ import {
   Post,
   HttpStatus,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { RestaurantTableService } from './restaurant.table.service';
 import { RestaurantTable } from 'src/mongo/models/restaurant.table.model';
 import { DataType } from 'src/mongo/repositories/base.repository';
 import { Response } from 'src/utils/response';
 import { RestaurantTableDTO } from 'src/dto/restaurant.table.dto';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 
 @Controller('tables')
 export class RestaurantTableController {
@@ -22,6 +24,7 @@ export class RestaurantTableController {
   ) {}
 
   @Post()
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.CREATED)
   async createOne(
     @Body() restaurantTableData: RestaurantTableDTO,
@@ -33,6 +36,7 @@ export class RestaurantTableController {
   }
 
   @Get()
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async findAll(): Promise<Response<RestaurantTable[]>> {
     const response = await this.restaurantTableService.findAll();
@@ -41,6 +45,7 @@ export class RestaurantTableController {
   }
 
   @Get(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async findOne(@Param() params: any): Promise<Response<RestaurantTable>> {
     const response = await this.restaurantTableService.findOne(params.id);
@@ -49,6 +54,7 @@ export class RestaurantTableController {
   }
 
   @Put(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async updateOne(
     @Param() params: any,
@@ -63,6 +69,7 @@ export class RestaurantTableController {
   }
 
   @Delete(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOne(@Param() params: any) {
     await this.restaurantTableService.deleteOne(params.id);

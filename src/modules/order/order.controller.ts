@@ -8,18 +8,21 @@ import {
   Post,
   HttpStatus,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { Order } from 'src/mongo/models/order.model';
 import { DataType } from 'src/mongo/repositories/base.repository';
 import { Response } from 'src/utils/response';
 import { OrderDTO } from 'src/dto/order.dto';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.CREATED)
   async createOne(@Body() orderData: OrderDTO): Promise<Response<Order>> {
     const response = await this.orderService.createOne(orderData);
@@ -28,6 +31,7 @@ export class OrderController {
   }
 
   @Get()
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async findAll(): Promise<Response<Order[]>> {
     const response = await this.orderService.findAll();
@@ -36,6 +40,7 @@ export class OrderController {
   }
 
   @Get(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async findOne(@Param() params: any): Promise<Response<Order>> {
     const response = await this.orderService.findOne(params.id);
@@ -44,6 +49,7 @@ export class OrderController {
   }
 
   @Put(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   async updateOne(
     @Param() params: any,
@@ -55,6 +61,7 @@ export class OrderController {
   }
 
   @Delete(':id')
+  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOne(@Param() params: any) {
     await this.orderService.deleteOne(params.id);

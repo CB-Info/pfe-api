@@ -11,8 +11,8 @@ jest.mock('../../configs/firebase.config', () => ({
   __esModule: true,
   default: {
     credential: 'mock-credential',
-    databaseURL: 'mock-url'
-  }
+    databaseURL: 'mock-url',
+  },
 }));
 
 // Mock Firebase guard
@@ -21,7 +21,7 @@ jest.mock('../../guards/firebase-token.guard', () => ({
     canActivate() {
       return true;
     }
-  }
+  },
 }));
 
 describe('UserController', () => {
@@ -144,7 +144,12 @@ describe('UserController', () => {
   });
 
   describe('getAllUsers', () => {
-    const mockUsers = [mockUser, mockAdminUser, mockOwnerUser, mockManagerUser] as User[];
+    const mockUsers = [
+      mockUser,
+      mockAdminUser,
+      mockOwnerUser,
+      mockManagerUser,
+    ] as User[];
 
     it('should return all users when requested by management', async () => {
       const mockRequest = { user: mockAdminUser };
@@ -179,9 +184,9 @@ describe('UserController', () => {
 
       expect(userService.canManageUsers).toHaveBeenCalledWith(UserRole.WAITER);
       expect(userService.getAllUsers).not.toHaveBeenCalled();
-      expect(result).toEqual({ 
-        error: 'Insufficient permissions. Only management can view all users.', 
-        data: null 
+      expect(result).toEqual({
+        error: 'Insufficient permissions. Only management can view all users.',
+        data: null,
       });
     });
 
@@ -191,11 +196,13 @@ describe('UserController', () => {
 
       const result = await controller.getAllUsers(mockRequest);
 
-      expect(userService.canManageUsers).toHaveBeenCalledWith(UserRole.CUSTOMER);
+      expect(userService.canManageUsers).toHaveBeenCalledWith(
+        UserRole.CUSTOMER,
+      );
       expect(userService.getAllUsers).not.toHaveBeenCalled();
-      expect(result).toEqual({ 
-        error: 'Insufficient permissions. Only management can view all users.', 
-        data: null 
+      expect(result).toEqual({
+        error: 'Insufficient permissions. Only management can view all users.',
+        data: null,
       });
     });
   });
@@ -231,9 +238,9 @@ describe('UserController', () => {
 
       expect(userService.canManageUsers).toHaveBeenCalledWith(UserRole.WAITER);
       expect(userService.getUserById).not.toHaveBeenCalled();
-      expect(result).toEqual({ 
-        error: 'Insufficient permissions. You can only view your own profile.', 
-        data: null 
+      expect(result).toEqual({
+        error: 'Insufficient permissions. You can only view your own profile.',
+        data: null,
       });
     });
   });
@@ -253,10 +260,17 @@ describe('UserController', () => {
       userService.canManageUsers.mockReturnValue(true);
       userService.updateUser.mockResolvedValue(mockUser as User);
 
-      const result = await controller.updateUser(mockUpdateDTO, 'user123', mockRequest);
+      const result = await controller.updateUser(
+        mockUpdateDTO,
+        'user123',
+        mockRequest,
+      );
 
       expect(userService.canManageUsers).toHaveBeenCalledWith(UserRole.ADMIN);
-      expect(userService.updateUser).toHaveBeenCalledWith('user123', mockUpdateDTO);
+      expect(userService.updateUser).toHaveBeenCalledWith(
+        'user123',
+        mockUpdateDTO,
+      );
       expect(result).toEqual({ error: '', data: mockUser });
     });
 
@@ -264,9 +278,16 @@ describe('UserController', () => {
       const mockRequest = { user: mockUser };
       userService.updateUser.mockResolvedValue(mockUser as User);
 
-      const result = await controller.updateUser(mockUpdateDTO, 'user123', mockRequest);
+      const result = await controller.updateUser(
+        mockUpdateDTO,
+        'user123',
+        mockRequest,
+      );
 
-      expect(userService.updateUser).toHaveBeenCalledWith('user123', mockUpdateDTO);
+      expect(userService.updateUser).toHaveBeenCalledWith(
+        'user123',
+        mockUpdateDTO,
+      );
       expect(result).toEqual({ error: '', data: mockUser });
     });
 
@@ -274,13 +295,18 @@ describe('UserController', () => {
       const mockRequest = { user: mockWaiterUser };
       userService.canManageUsers.mockReturnValue(false);
 
-      const result = await controller.updateUser(mockUpdateDTO, 'user123', mockRequest);
+      const result = await controller.updateUser(
+        mockUpdateDTO,
+        'user123',
+        mockRequest,
+      );
 
       expect(userService.canManageUsers).toHaveBeenCalledWith(UserRole.WAITER);
       expect(userService.updateUser).not.toHaveBeenCalled();
-      expect(result).toEqual({ 
-        error: 'Insufficient permissions. You can only update your own profile.', 
-        data: null 
+      expect(result).toEqual({
+        error:
+          'Insufficient permissions. You can only update your own profile.',
+        data: null,
       });
     });
   });
@@ -292,13 +318,17 @@ describe('UserController', () => {
       const mockRequest = { user: mockAdminUser };
       userService.updateUserRole.mockResolvedValue(mockUser as User);
 
-      const result = await controller.updateUserRole('user123', roleUpdateBody, mockRequest);
+      const result = await controller.updateUserRole(
+        'user123',
+        roleUpdateBody,
+        mockRequest,
+      );
 
       expect(userService.updateUserRole).toHaveBeenCalledWith(
         'user123',
         UserRole.WAITER,
         UserRole.ADMIN,
-        'admin123'
+        'admin123',
       );
       expect(result).toEqual({ error: '', data: mockUser });
     });
@@ -307,34 +337,48 @@ describe('UserController', () => {
       const mockRequest = { user: mockOwnerUser };
       userService.updateUserRole.mockResolvedValue(mockUser as User);
 
-      const result = await controller.updateUserRole('user123', roleUpdateBody, mockRequest);
+      const result = await controller.updateUserRole(
+        'user123',
+        roleUpdateBody,
+        mockRequest,
+      );
 
       expect(userService.updateUserRole).toHaveBeenCalledWith(
         'user123',
         UserRole.WAITER,
         UserRole.OWNER,
-        'owner123'
+        'owner123',
       );
       expect(result).toEqual({ error: '', data: mockUser });
     });
 
     it('should handle ForbiddenException from service', async () => {
       const mockRequest = { user: mockManagerUser };
-      userService.updateUserRole.mockRejectedValue(new ForbiddenException('Insufficient permissions'));
+      userService.updateUserRole.mockRejectedValue(
+        new ForbiddenException('Insufficient permissions'),
+      );
 
       await expect(
-        controller.updateUserRole('user123', { role: UserRole.OWNER }, mockRequest)
+        controller.updateUserRole(
+          'user123',
+          { role: UserRole.OWNER },
+          mockRequest,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('should handle ForbiddenException when user tries to change own role', async () => {
       const mockRequest = { user: mockManagerUser };
       userService.updateUserRole.mockRejectedValue(
-        new ForbiddenException('Users cannot change their own role')
+        new ForbiddenException('Users cannot change their own role'),
       );
 
       await expect(
-        controller.updateUserRole('manager123', { role: UserRole.ADMIN }, mockRequest)
+        controller.updateUserRole(
+          'manager123',
+          { role: UserRole.ADMIN },
+          mockRequest,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -346,28 +390,40 @@ describe('UserController', () => {
 
       const result = await controller.deleteUser('user123', mockRequest);
 
-      expect(userService.deleteUser).toHaveBeenCalledWith('user123', UserRole.ADMIN);
-      expect(result).toEqual({ 
-        error: '', 
-        data: { 
-          deleted: true, 
-          message: 'User successfully deleted from both Firebase Auth and MongoDB' 
-        } 
+      expect(userService.deleteUser).toHaveBeenCalledWith(
+        'user123',
+        UserRole.ADMIN,
+      );
+      expect(result).toEqual({
+        error: '',
+        data: {
+          deleted: true,
+          message:
+            'User successfully deleted from both Firebase Auth and MongoDB',
+        },
       });
     });
 
     it('should handle ForbiddenException when non-admin tries to delete', async () => {
       const mockRequest = { user: mockOwnerUser };
-      userService.deleteUser.mockRejectedValue(new ForbiddenException('Only admins can delete users'));
+      userService.deleteUser.mockRejectedValue(
+        new ForbiddenException('Only admins can delete users'),
+      );
 
-      await expect(controller.deleteUser('user123', mockRequest)).rejects.toThrow(ForbiddenException);
+      await expect(
+        controller.deleteUser('user123', mockRequest),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should handle BadRequestException when deletion fails', async () => {
       const mockRequest = { user: mockAdminUser };
-      userService.deleteUser.mockRejectedValue(new BadRequestException('Failed to delete user'));
+      userService.deleteUser.mockRejectedValue(
+        new BadRequestException('Failed to delete user'),
+      );
 
-      await expect(controller.deleteUser('user123', mockRequest)).rejects.toThrow(BadRequestException);
+      await expect(
+        controller.deleteUser('user123', mockRequest),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -392,9 +448,10 @@ describe('UserController', () => {
 
       expect(userService.canManageUsers).toHaveBeenCalledWith(UserRole.WAITER);
       expect(userService.deactivateUser).not.toHaveBeenCalled();
-      expect(result).toEqual({ 
-        error: 'Insufficient permissions. Only management can deactivate users.', 
-        data: null 
+      expect(result).toEqual({
+        error:
+          'Insufficient permissions. Only management can deactivate users.',
+        data: null,
       });
     });
   });
@@ -418,11 +475,13 @@ describe('UserController', () => {
 
       const result = await controller.activateUser('user123', mockRequest);
 
-      expect(userService.canManageUsers).toHaveBeenCalledWith(UserRole.KITCHEN_STAFF);
+      expect(userService.canManageUsers).toHaveBeenCalledWith(
+        UserRole.KITCHEN_STAFF,
+      );
       expect(userService.activateUser).not.toHaveBeenCalled();
-      expect(result).toEqual({ 
-        error: 'Insufficient permissions. Only management can activate users.', 
-        data: null 
+      expect(result).toEqual({
+        error: 'Insufficient permissions. Only management can activate users.',
+        data: null,
       });
     });
   });
@@ -430,7 +489,7 @@ describe('UserController', () => {
   describe('checkPermissions', () => {
     it('should return admin permissions', async () => {
       const mockRequest = { user: mockAdminUser };
-      
+
       // Mock all permission methods
       userService.canManageUsers.mockReturnValue(true);
       userService.canChangeRoles.mockReturnValue(true);
@@ -455,14 +514,15 @@ describe('UserController', () => {
           canTakeOrders: true,
           canPrepareOrders: true,
           canSuperviseRestaurant: true,
-          roleDescription: 'Full access to all features including creating owner accounts and permanent user deletion',
+          roleDescription:
+            'Full access to all features including creating owner accounts and permanent user deletion',
         },
       });
     });
 
     it('should return owner permissions', async () => {
       const mockRequest = { user: mockOwnerUser };
-      
+
       userService.canManageUsers.mockReturnValue(true);
       userService.canChangeRoles.mockReturnValue(true);
       userService.canDeleteUsers.mockReturnValue(false);
@@ -486,14 +546,15 @@ describe('UserController', () => {
           canTakeOrders: true,
           canPrepareOrders: true,
           canSuperviseRestaurant: true,
-          roleDescription: 'Can supervise entire restaurant, add/remove users, change roles (except admin and own role), plus all manager rights',
+          roleDescription:
+            'Can supervise entire restaurant, add/remove users, change roles (except admin and own role), plus all manager rights',
         },
       });
     });
 
     it('should return waiter permissions', async () => {
       const mockRequest = { user: mockWaiterUser };
-      
+
       userService.canManageUsers.mockReturnValue(false);
       userService.canChangeRoles.mockReturnValue(false);
       userService.canDeleteUsers.mockReturnValue(false);
@@ -517,14 +578,15 @@ describe('UserController', () => {
           canTakeOrders: true,
           canPrepareOrders: false,
           canSuperviseRestaurant: false,
-          roleDescription: 'Can take orders, send to kitchen, and receive order ready notifications',
+          roleDescription:
+            'Can take orders, send to kitchen, and receive order ready notifications',
         },
       });
     });
 
     it('should return kitchen staff permissions', async () => {
       const mockRequest = { user: mockKitchenUser };
-      
+
       userService.canManageUsers.mockReturnValue(false);
       userService.canChangeRoles.mockReturnValue(false);
       userService.canDeleteUsers.mockReturnValue(false);
@@ -548,14 +610,15 @@ describe('UserController', () => {
           canTakeOrders: false,
           canPrepareOrders: true,
           canSuperviseRestaurant: false,
-          roleDescription: 'Can receive orders, prepare them, and mark them as ready',
+          roleDescription:
+            'Can receive orders, prepare them, and mark them as ready',
         },
       });
     });
 
     it('should return customer permissions', async () => {
       const mockRequest = { user: mockUser };
-      
+
       userService.canManageUsers.mockReturnValue(false);
       userService.canChangeRoles.mockReturnValue(false);
       userService.canDeleteUsers.mockReturnValue(false);

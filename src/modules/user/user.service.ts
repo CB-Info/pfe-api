@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UserRepository } from 'src/mongo/repositories/user.repository';
 import { UserDTO } from 'src/dto/user.dto';
 import { User, UserRole } from 'src/mongo/models/user.model';
@@ -16,18 +20,22 @@ export class UserService {
     parameters: UserUpdateDTO,
   ): Promise<User> => {
     // @ts-expect-error parameters is a DataType
-    const updated = await this.userRepository.updateOneBy({ _id: userId }, parameters);
-    
+    const updated = await this.userRepository.updateOneBy(
+      { _id: userId },
+      parameters,
+    );
+
     if (!updated) {
       throw new BadRequestException('Failed to update user');
     }
-    
+
     return this.userRepository.findOneById(userId);
   };
 
   registerUser = async (parameters: UserDTO): Promise<User> => {
     try {
-      const { email, password, firstname, lastname, role, phoneNumber } = parameters;
+      const { email, password, firstname, lastname, role, phoneNumber } =
+        parameters;
       const data = JSON.stringify({ email, password, returnSecureToken: true });
 
       const result = await axios({
@@ -67,15 +75,19 @@ export class UserService {
   };
 
   // Enhanced role permission checking methods
-  
+
   // Check if user can manage other users (view, edit, deactivate)
   canManageUsers = (userRole: UserRole): boolean => {
-    return [UserRole.ADMIN, UserRole.OWNER, UserRole.MANAGER].includes(userRole);
+    return [UserRole.ADMIN, UserRole.OWNER, UserRole.MANAGER].includes(
+      userRole,
+    );
   };
 
   // Check if user can change roles
   canChangeRoles = (userRole: UserRole): boolean => {
-    return [UserRole.ADMIN, UserRole.OWNER, UserRole.MANAGER].includes(userRole);
+    return [UserRole.ADMIN, UserRole.OWNER, UserRole.MANAGER].includes(
+      userRole,
+    );
   };
 
   // Check if user can delete users (only admin)
@@ -90,17 +102,34 @@ export class UserService {
 
   // Check if user can work with orders
   canManageOrders = (userRole: UserRole): boolean => {
-    return [UserRole.CUSTOMER, UserRole.WAITER, UserRole.KITCHEN_STAFF, UserRole.MANAGER, UserRole.OWNER, UserRole.ADMIN].includes(userRole);
+    return [
+      UserRole.CUSTOMER,
+      UserRole.WAITER,
+      UserRole.KITCHEN_STAFF,
+      UserRole.MANAGER,
+      UserRole.OWNER,
+      UserRole.ADMIN,
+    ].includes(userRole);
   };
 
   // Check if user can take orders (waiter and above)
   canTakeOrders = (userRole: UserRole): boolean => {
-    return [UserRole.WAITER, UserRole.MANAGER, UserRole.OWNER, UserRole.ADMIN].includes(userRole);
+    return [
+      UserRole.WAITER,
+      UserRole.MANAGER,
+      UserRole.OWNER,
+      UserRole.ADMIN,
+    ].includes(userRole);
   };
 
   // Check if user can prepare orders (kitchen staff and above)
   canPrepareOrders = (userRole: UserRole): boolean => {
-    return [UserRole.KITCHEN_STAFF, UserRole.MANAGER, UserRole.OWNER, UserRole.ADMIN].includes(userRole);
+    return [
+      UserRole.KITCHEN_STAFF,
+      UserRole.MANAGER,
+      UserRole.OWNER,
+      UserRole.ADMIN,
+    ].includes(userRole);
   };
 
   // Check if user can view all restaurant data (owner and admin)
@@ -112,7 +141,7 @@ export class UserService {
   validateRoleChange = (
     requestingUserRole: UserRole,
     targetRole: UserRole,
-    isOwnRole: boolean = false
+    isOwnRole: boolean = false,
   ): void => {
     // Users cannot change their own role to higher levels
     if (isOwnRole) {
@@ -120,24 +149,36 @@ export class UserService {
     }
 
     // Only admins can assign admin roles
-    if (targetRole === UserRole.ADMIN && requestingUserRole !== UserRole.ADMIN) {
+    if (
+      targetRole === UserRole.ADMIN &&
+      requestingUserRole !== UserRole.ADMIN
+    ) {
       throw new ForbiddenException('Only admins can assign admin roles');
     }
 
     // Only admins can create owner accounts
-    if (targetRole === UserRole.OWNER && requestingUserRole !== UserRole.ADMIN) {
+    if (
+      targetRole === UserRole.OWNER &&
+      requestingUserRole !== UserRole.ADMIN
+    ) {
       throw new ForbiddenException('Only admins can assign owner roles');
     }
 
     // Only admins and owners can assign manager roles
-    if (targetRole === UserRole.MANAGER && 
-        ![UserRole.ADMIN, UserRole.OWNER].includes(requestingUserRole)) {
-      throw new ForbiddenException('Only admins or owners can assign manager roles');
+    if (
+      targetRole === UserRole.MANAGER &&
+      ![UserRole.ADMIN, UserRole.OWNER].includes(requestingUserRole)
+    ) {
+      throw new ForbiddenException(
+        'Only admins or owners can assign manager roles',
+      );
     }
 
     // Only management can change roles
     if (!this.canChangeRoles(requestingUserRole)) {
-      throw new ForbiddenException('Insufficient permissions to change user roles');
+      throw new ForbiddenException(
+        'Insufficient permissions to change user roles',
+      );
     }
   };
 
@@ -150,13 +191,13 @@ export class UserService {
   ): Promise<User> => {
     // Check if user is trying to change their own role
     const isOwnRole = requestingUserId === userId;
-    
+
     // Validate the role change
     this.validateRoleChange(requestingUserRole, newRole, isOwnRole);
 
     const updated = await this.userRepository.updateOneBy(
       { _id: userId },
-      { role: newRole }
+      { role: newRole },
     );
 
     if (!updated) {
@@ -183,31 +224,47 @@ export class UserService {
         throw new BadRequestException('User not found');
       }
 
-      console.log(`Attempting to delete user. MongoDB ID: ${userId}, Firebase ID: ${user.firebaseId}`);
+      console.log(
+        `Attempting to delete user. MongoDB ID: ${userId}, Firebase ID: ${user.firebaseId}`,
+      );
 
       // Validate Firebase ID before attempting deletion
-      if (user.firebaseId && typeof user.firebaseId === 'string' && user.firebaseId.trim().length > 0 && user.firebaseId.length <= 128) {
+      if (
+        user.firebaseId &&
+        typeof user.firebaseId === 'string' &&
+        user.firebaseId.trim().length > 0 &&
+        user.firebaseId.length <= 128
+      ) {
         try {
           await firebase.auth().deleteUser(user.firebaseId);
-          console.log(`Successfully deleted user ${user.firebaseId} from Firebase Auth`);
+          console.log(
+            `Successfully deleted user ${user.firebaseId} from Firebase Auth`,
+          );
         } catch (firebaseError) {
           console.log('Firebase deletion error:', firebaseError);
           // Continue with MongoDB deletion even if Firebase fails
           // This handles cases where Firebase user might already be deleted or is invalid
         }
       } else {
-        console.log(`Invalid or missing Firebase ID for user ${userId}:`, user.firebaseId);
-        console.log('Skipping Firebase deletion due to invalid Firebase ID, but continuing with MongoDB deletion');
+        console.log(
+          `Invalid or missing Firebase ID for user ${userId}:`,
+          user.firebaseId,
+        );
+        console.log(
+          'Skipping Firebase deletion due to invalid Firebase ID, but continuing with MongoDB deletion',
+        );
       }
 
       // Delete from MongoDB (handles user data and permissions)
       const deleted = await this.userRepository.deleteOneBy({ _id: userId });
-      
+
       if (!deleted) {
         throw new BadRequestException('Failed to delete user from database');
       }
 
-      console.log(`Successfully deleted user ${userId} from MongoDB${user.firebaseId ? ' and Firebase Auth' : ' (Firebase ID was invalid)'}`);
+      console.log(
+        `Successfully deleted user ${userId} from MongoDB${user.firebaseId ? ' and Firebase Auth' : ' (Firebase ID was invalid)'}`,
+      );
       return true;
     } catch (e) {
       console.log('Delete user error:', e);
@@ -227,33 +284,49 @@ export class UserService {
         throw new BadRequestException('User not found');
       }
 
-      console.log(`Attempting to deactivate user. MongoDB ID: ${userId}, Firebase ID: ${user.firebaseId}`);
+      console.log(
+        `Attempting to deactivate user. MongoDB ID: ${userId}, Firebase ID: ${user.firebaseId}`,
+      );
 
       // Deactivate in Firebase Auth if Firebase ID is valid
-      if (user.firebaseId && typeof user.firebaseId === 'string' && user.firebaseId.trim().length > 0 && user.firebaseId.length <= 128) {
+      if (
+        user.firebaseId &&
+        typeof user.firebaseId === 'string' &&
+        user.firebaseId.trim().length > 0 &&
+        user.firebaseId.length <= 128
+      ) {
         try {
           await firebase.auth().updateUser(user.firebaseId, { disabled: true });
-          console.log(`Successfully deactivated user ${user.firebaseId} in Firebase Auth`);
+          console.log(
+            `Successfully deactivated user ${user.firebaseId} in Firebase Auth`,
+          );
         } catch (firebaseError) {
           console.log('Firebase deactivation error:', firebaseError);
           // Continue with MongoDB deactivation even if Firebase fails
         }
       } else {
-        console.log(`Invalid or missing Firebase ID for user ${userId}:`, user.firebaseId);
-        console.log('Skipping Firebase deactivation due to invalid Firebase ID, but continuing with MongoDB deactivation');
+        console.log(
+          `Invalid or missing Firebase ID for user ${userId}:`,
+          user.firebaseId,
+        );
+        console.log(
+          'Skipping Firebase deactivation due to invalid Firebase ID, but continuing with MongoDB deactivation',
+        );
       }
 
       // Deactivate in MongoDB
       const updated = await this.userRepository.updateOneBy(
         { _id: userId },
-        { isActive: false }
+        { isActive: false },
       );
 
       if (!updated) {
         throw new BadRequestException('Failed to deactivate user in database');
       }
 
-      console.log(`Successfully deactivated user ${userId} in MongoDB${user.firebaseId ? ' and Firebase Auth' : ' (Firebase ID was invalid)'}`);
+      console.log(
+        `Successfully deactivated user ${userId} in MongoDB${user.firebaseId ? ' and Firebase Auth' : ' (Firebase ID was invalid)'}`,
+      );
       return this.userRepository.findOneById(userId);
     } catch (e) {
       console.log('Deactivate user error:', e);
@@ -273,33 +346,51 @@ export class UserService {
         throw new BadRequestException('User not found');
       }
 
-      console.log(`Attempting to activate user. MongoDB ID: ${userId}, Firebase ID: ${user.firebaseId}`);
+      console.log(
+        `Attempting to activate user. MongoDB ID: ${userId}, Firebase ID: ${user.firebaseId}`,
+      );
 
       // Activate in Firebase Auth if Firebase ID is valid
-      if (user.firebaseId && typeof user.firebaseId === 'string' && user.firebaseId.trim().length > 0 && user.firebaseId.length <= 128) {
+      if (
+        user.firebaseId &&
+        typeof user.firebaseId === 'string' &&
+        user.firebaseId.trim().length > 0 &&
+        user.firebaseId.length <= 128
+      ) {
         try {
-          await firebase.auth().updateUser(user.firebaseId, { disabled: false });
-          console.log(`Successfully activated user ${user.firebaseId} in Firebase Auth`);
+          await firebase
+            .auth()
+            .updateUser(user.firebaseId, { disabled: false });
+          console.log(
+            `Successfully activated user ${user.firebaseId} in Firebase Auth`,
+          );
         } catch (firebaseError) {
           console.log('Firebase activation error:', firebaseError);
           // Continue with MongoDB activation even if Firebase fails
         }
       } else {
-        console.log(`Invalid or missing Firebase ID for user ${userId}:`, user.firebaseId);
-        console.log('Skipping Firebase activation due to invalid Firebase ID, but continuing with MongoDB activation');
+        console.log(
+          `Invalid or missing Firebase ID for user ${userId}:`,
+          user.firebaseId,
+        );
+        console.log(
+          'Skipping Firebase activation due to invalid Firebase ID, but continuing with MongoDB activation',
+        );
       }
 
       // Activate in MongoDB
       const updated = await this.userRepository.updateOneBy(
         { _id: userId },
-        { isActive: true }
+        { isActive: true },
       );
 
       if (!updated) {
         throw new BadRequestException('Failed to activate user in database');
       }
 
-      console.log(`Successfully activated user ${userId} in MongoDB${user.firebaseId ? ' and Firebase Auth' : ' (Firebase ID was invalid)'}`);
+      console.log(
+        `Successfully activated user ${userId} in MongoDB${user.firebaseId ? ' and Firebase Auth' : ' (Firebase ID was invalid)'}`,
+      );
       return this.userRepository.findOneById(userId);
     } catch (e) {
       console.log('Activate user error:', e);
@@ -321,6 +412,8 @@ export class UserService {
   };
 
   isManagement = (userRole: UserRole): boolean => {
-    return [UserRole.ADMIN, UserRole.OWNER, UserRole.MANAGER].includes(userRole);
+    return [UserRole.ADMIN, UserRole.OWNER, UserRole.MANAGER].includes(
+      userRole,
+    );
   };
 }

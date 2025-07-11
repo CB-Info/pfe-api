@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { UserRole } from '../mongo/models/user.model';
 
 export class UserDTO {
@@ -20,11 +26,11 @@ export class UserDTO {
   @IsNotEmpty()
   lastname: string;
 
-  @ApiProperty({ 
-    enum: UserRole, 
+  @ApiProperty({
+    enum: UserRole,
     enumName: 'UserRole',
     description: 'Role of the user in the restaurant',
-    default: UserRole.CUSTOMER 
+    default: UserRole.CUSTOMER,
   })
   @IsEnum(UserRole)
   @IsOptional()

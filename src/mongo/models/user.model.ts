@@ -8,7 +8,7 @@ export enum UserRole {
   KITCHEN_STAFF = 'kitchen_staff',
   MANAGER = 'manager',
   OWNER = 'owner',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
 }
 
 @Schema()
@@ -29,7 +29,7 @@ export class User extends Document {
     type: String,
     enum: Object.values(UserRole),
     required: true,
-    default: UserRole.CUSTOMER
+    default: UserRole.CUSTOMER,
   })
   role: UserRole;
 

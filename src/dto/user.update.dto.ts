@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsBoolean,
+} from 'class-validator';
 import { UserRole } from '../mongo/models/user.model';
 
 export class UserUpdateDTO {
@@ -16,11 +23,11 @@ export class UserUpdateDTO {
   @IsNotEmpty()
   lastname: string;
 
-  @ApiProperty({ 
-    enum: UserRole, 
+  @ApiProperty({
+    enum: UserRole,
     enumName: 'UserRole',
     description: 'Role of the user in the restaurant',
-    required: false 
+    required: false,
   })
   @IsEnum(UserRole)
   @IsOptional()
@@ -31,7 +38,10 @@ export class UserUpdateDTO {
   @IsOptional()
   phoneNumber?: string;
 
-  @ApiProperty({ required: false, description: 'Whether the user account is active' })
+  @ApiProperty({
+    required: false,
+    description: 'Whether the user account is active',
+  })
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;

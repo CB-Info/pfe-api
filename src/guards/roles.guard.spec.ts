@@ -50,7 +50,10 @@ describe('RolesGuard', () => {
     });
 
     it('should allow access when user has required role', () => {
-      reflector.getAllAndOverride.mockReturnValue([UserRole.OWNER, UserRole.MANAGER]);
+      reflector.getAllAndOverride.mockReturnValue([
+        UserRole.OWNER,
+        UserRole.MANAGER,
+      ]);
       const context = createMockExecutionContext({ role: UserRole.OWNER });
 
       const result = guard.canActivate(context);
@@ -59,7 +62,10 @@ describe('RolesGuard', () => {
     });
 
     it('should allow access when user has one of the required roles', () => {
-      reflector.getAllAndOverride.mockReturnValue([UserRole.OWNER, UserRole.MANAGER]);
+      reflector.getAllAndOverride.mockReturnValue([
+        UserRole.OWNER,
+        UserRole.MANAGER,
+      ]);
       const context = createMockExecutionContext({ role: UserRole.MANAGER });
 
       const result = guard.canActivate(context);
@@ -68,7 +74,10 @@ describe('RolesGuard', () => {
     });
 
     it('should deny access when user does not have required role', () => {
-      reflector.getAllAndOverride.mockReturnValue([UserRole.OWNER, UserRole.MANAGER]);
+      reflector.getAllAndOverride.mockReturnValue([
+        UserRole.OWNER,
+        UserRole.MANAGER,
+      ]);
       const context = createMockExecutionContext({ role: UserRole.CUSTOMER });
 
       const result = guard.canActivate(context);

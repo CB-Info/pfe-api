@@ -29,8 +29,8 @@ const mockedAxios = require('axios');
 jest.mock('../../configs/config', () => ({
   __esModule: true,
   default: () => ({
-    apiKey: 'test-api-key'
-  })
+    apiKey: 'test-api-key',
+  }),
 }));
 
 describe('UserService', () => {
@@ -44,66 +44,6 @@ describe('UserService', () => {
     lastname: 'Doe',
     role: UserRole.CUSTOMER,
     firebaseId: 'firebase123',
-    phoneNumber: '+1234567890',
-    isActive: true,
-    dateOfCreation: '2024-01-01',
-  };
-
-  const mockAdminUser: Partial<User> & { _id: string } = {
-    _id: 'admin123',
-    email: 'admin@restaurant.com',
-    firstname: 'Admin',
-    lastname: 'User',
-    role: UserRole.ADMIN,
-    firebaseId: 'firebase-admin-123',
-    phoneNumber: '+1234567890',
-    isActive: true,
-    dateOfCreation: '2024-01-01',
-  };
-
-  const mockOwnerUser: Partial<User> & { _id: string } = {
-    _id: 'owner123',
-    email: 'owner@restaurant.com',
-    firstname: 'Owner',
-    lastname: 'User',
-    role: UserRole.OWNER,
-    firebaseId: 'firebase-owner-123',
-    phoneNumber: '+1234567890',
-    isActive: true,
-    dateOfCreation: '2024-01-01',
-  };
-
-  const mockManagerUser: Partial<User> & { _id: string } = {
-    _id: 'manager123',
-    email: 'manager@restaurant.com',
-    firstname: 'Manager',
-    lastname: 'User',
-    role: UserRole.MANAGER,
-    firebaseId: 'firebase-manager-123',
-    phoneNumber: '+1234567890',
-    isActive: true,
-    dateOfCreation: '2024-01-01',
-  };
-
-  const mockWaiterUser: Partial<User> & { _id: string } = {
-    _id: 'waiter123',
-    email: 'waiter@restaurant.com',
-    firstname: 'Waiter',
-    lastname: 'User',
-    role: UserRole.WAITER,
-    firebaseId: 'firebase-waiter-123',
-    phoneNumber: '+1234567890',
-    isActive: true,
-    dateOfCreation: '2024-01-01',
-  };
-
-  const mockKitchenUser: Partial<User> & { _id: string } = {
-    _id: 'kitchen123',
-    email: 'kitchen@restaurant.com',
-    firstname: 'Kitchen',
-    lastname: 'Staff',
-    role: UserRole.KITCHEN_STAFF,
-    firebaseId: 'firebase-kitchen-123',
     phoneNumber: '+1234567890',
     isActive: true,
     dateOfCreation: '2024-01-01',
@@ -167,10 +107,10 @@ describe('UserService', () => {
         method: 'post',
         url: 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=test-api-key',
         headers: { 'Content-Type': 'application/json' },
-        data: JSON.stringify({ 
-          email: mockUserDTO.email, 
-          password: mockUserDTO.password, 
-          returnSecureToken: true 
+        data: JSON.stringify({
+          email: mockUserDTO.email,
+          password: mockUserDTO.password,
+          returnSecureToken: true,
         }),
       });
 
@@ -207,13 +147,17 @@ describe('UserService', () => {
     it('should throw BadRequestException when Firebase registration fails', async () => {
       mockedAxios.mockRejectedValue(new Error('Firebase error'));
 
-      await expect(service.registerUser(mockUserDTO)).rejects.toThrow(BadRequestException);
+      await expect(service.registerUser(mockUserDTO)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException when database insertion fails', async () => {
       userRepository.insert.mockRejectedValue(new Error('Database error'));
 
-      await expect(service.registerUser(mockUserDTO)).rejects.toThrow(BadRequestException);
+      await expect(service.registerUser(mockUserDTO)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -235,7 +179,7 @@ describe('UserService', () => {
 
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        mockUpdateDTO
+        mockUpdateDTO,
       );
       expect(userRepository.findOneById).toHaveBeenCalledWith('user123');
       expect(result).toEqual(mockUser);
@@ -244,8 +188,10 @@ describe('UserService', () => {
     it('should throw BadRequestException when update fails', async () => {
       userRepository.updateOneBy.mockResolvedValue(false);
 
-      await expect(service.updateUser('user123', mockUpdateDTO)).rejects.toThrow(BadRequestException);
-      
+      await expect(
+        service.updateUser('user123', mockUpdateDTO),
+      ).rejects.toThrow(BadRequestException);
+
       expect(userRepository.findOneById).not.toHaveBeenCalled();
     });
   });
@@ -272,7 +218,9 @@ describe('UserService', () => {
 
       const result = await service.getUsersByRole(UserRole.WAITER);
 
-      expect(userRepository.findManyBy).toHaveBeenCalledWith({ role: UserRole.WAITER });
+      expect(userRepository.findManyBy).toHaveBeenCalledWith({
+        role: UserRole.WAITER,
+      });
       expect(result).toEqual(mockWaiters);
     });
   });
@@ -382,7 +330,9 @@ describe('UserService', () => {
       it('should return false for all other roles', () => {
         expect(service.canSuperviseRestaurant(UserRole.MANAGER)).toBe(false);
         expect(service.canSuperviseRestaurant(UserRole.WAITER)).toBe(false);
-        expect(service.canSuperviseRestaurant(UserRole.KITCHEN_STAFF)).toBe(false);
+        expect(service.canSuperviseRestaurant(UserRole.KITCHEN_STAFF)).toBe(
+          false,
+        );
         expect(service.canSuperviseRestaurant(UserRole.CUSTOMER)).toBe(false);
       });
     });
@@ -390,53 +340,70 @@ describe('UserService', () => {
 
   describe('validateRoleChange', () => {
     it('should throw ForbiddenException when user tries to change own role', () => {
-      expect(() => service.validateRoleChange(UserRole.MANAGER, UserRole.ADMIN, true))
-        .toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.MANAGER, UserRole.ADMIN, true),
+      ).toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException when non-admin tries to assign admin role', () => {
-      expect(() => service.validateRoleChange(UserRole.OWNER, UserRole.ADMIN, false))
-        .toThrow(ForbiddenException);
-      expect(() => service.validateRoleChange(UserRole.MANAGER, UserRole.ADMIN, false))
-        .toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.OWNER, UserRole.ADMIN, false),
+      ).toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.MANAGER, UserRole.ADMIN, false),
+      ).toThrow(ForbiddenException);
     });
 
     it('should allow admin to assign admin role', () => {
-      expect(() => service.validateRoleChange(UserRole.ADMIN, UserRole.ADMIN, false))
-        .not.toThrow();
+      expect(() =>
+        service.validateRoleChange(UserRole.ADMIN, UserRole.ADMIN, false),
+      ).not.toThrow();
     });
 
     it('should throw ForbiddenException when non-admin tries to assign owner role', () => {
-      expect(() => service.validateRoleChange(UserRole.OWNER, UserRole.OWNER, false))
-        .toThrow(ForbiddenException);
-      expect(() => service.validateRoleChange(UserRole.MANAGER, UserRole.OWNER, false))
-        .toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.OWNER, UserRole.OWNER, false),
+      ).toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.MANAGER, UserRole.OWNER, false),
+      ).toThrow(ForbiddenException);
     });
 
     it('should allow admin to assign owner role', () => {
-      expect(() => service.validateRoleChange(UserRole.ADMIN, UserRole.OWNER, false))
-        .not.toThrow();
+      expect(() =>
+        service.validateRoleChange(UserRole.ADMIN, UserRole.OWNER, false),
+      ).not.toThrow();
     });
 
     it('should throw ForbiddenException when non-admin/owner tries to assign manager role', () => {
-      expect(() => service.validateRoleChange(UserRole.MANAGER, UserRole.MANAGER, false))
-        .toThrow(ForbiddenException);
-      expect(() => service.validateRoleChange(UserRole.WAITER, UserRole.MANAGER, false))
-        .toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.MANAGER, UserRole.MANAGER, false),
+      ).toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.WAITER, UserRole.MANAGER, false),
+      ).toThrow(ForbiddenException);
     });
 
     it('should allow admin and owner to assign manager role', () => {
-      expect(() => service.validateRoleChange(UserRole.ADMIN, UserRole.MANAGER, false))
-        .not.toThrow();
-      expect(() => service.validateRoleChange(UserRole.OWNER, UserRole.MANAGER, false))
-        .not.toThrow();
+      expect(() =>
+        service.validateRoleChange(UserRole.ADMIN, UserRole.MANAGER, false),
+      ).not.toThrow();
+      expect(() =>
+        service.validateRoleChange(UserRole.OWNER, UserRole.MANAGER, false),
+      ).not.toThrow();
     });
 
     it('should throw ForbiddenException when non-management tries to change roles', () => {
-      expect(() => service.validateRoleChange(UserRole.CUSTOMER, UserRole.WAITER, false))
-        .toThrow(ForbiddenException);
-      expect(() => service.validateRoleChange(UserRole.WAITER, UserRole.KITCHEN_STAFF, false))
-        .toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(UserRole.CUSTOMER, UserRole.WAITER, false),
+      ).toThrow(ForbiddenException);
+      expect(() =>
+        service.validateRoleChange(
+          UserRole.WAITER,
+          UserRole.KITCHEN_STAFF,
+          false,
+        ),
+      ).toThrow(ForbiddenException);
     });
   });
 
@@ -445,11 +412,16 @@ describe('UserService', () => {
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
 
-      const result = await service.updateUserRole('user123', UserRole.OWNER, UserRole.ADMIN, 'admin123');
+      const result = await service.updateUserRole(
+        'user123',
+        UserRole.OWNER,
+        UserRole.ADMIN,
+        'admin123',
+      );
 
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { role: UserRole.OWNER }
+        { role: UserRole.OWNER },
       );
       expect(userRepository.findOneById).toHaveBeenCalledWith('user123');
       expect(result).toEqual(mockUser);
@@ -459,11 +431,16 @@ describe('UserService', () => {
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
 
-      const result = await service.updateUserRole('user123', UserRole.MANAGER, UserRole.OWNER, 'owner123');
+      const result = await service.updateUserRole(
+        'user123',
+        UserRole.MANAGER,
+        UserRole.OWNER,
+        'owner123',
+      );
 
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { role: UserRole.MANAGER }
+        { role: UserRole.MANAGER },
       );
       expect(userRepository.findOneById).toHaveBeenCalledWith('user123');
       expect(result).toEqual(mockUser);
@@ -473,18 +450,28 @@ describe('UserService', () => {
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
 
-      const result = await service.updateUserRole('user123', UserRole.WAITER, UserRole.MANAGER, 'manager123');
+      const result = await service.updateUserRole(
+        'user123',
+        UserRole.WAITER,
+        UserRole.MANAGER,
+        'manager123',
+      );
 
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { role: UserRole.WAITER }
+        { role: UserRole.WAITER },
       );
       expect(result).toEqual(mockUser);
     });
 
     it('should throw ForbiddenException when user tries to change own role', async () => {
       await expect(
-        service.updateUserRole('user123', UserRole.ADMIN, UserRole.MANAGER, 'user123')
+        service.updateUserRole(
+          'user123',
+          UserRole.ADMIN,
+          UserRole.MANAGER,
+          'user123',
+        ),
       ).rejects.toThrow(ForbiddenException);
 
       expect(userRepository.updateOneBy).not.toHaveBeenCalled();
@@ -492,17 +479,32 @@ describe('UserService', () => {
 
     it('should throw ForbiddenException when non-admin tries to assign admin role', async () => {
       await expect(
-        service.updateUserRole('user123', UserRole.ADMIN, UserRole.OWNER, 'owner123')
+        service.updateUserRole(
+          'user123',
+          UserRole.ADMIN,
+          UserRole.OWNER,
+          'owner123',
+        ),
       ).rejects.toThrow(ForbiddenException);
 
       await expect(
-        service.updateUserRole('user123', UserRole.ADMIN, UserRole.MANAGER, 'manager123')
+        service.updateUserRole(
+          'user123',
+          UserRole.ADMIN,
+          UserRole.MANAGER,
+          'manager123',
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException when non-admin tries to assign owner role', async () => {
       await expect(
-        service.updateUserRole('user123', UserRole.OWNER, UserRole.MANAGER, 'manager123')
+        service.updateUserRole(
+          'user123',
+          UserRole.OWNER,
+          UserRole.MANAGER,
+          'manager123',
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -510,7 +512,12 @@ describe('UserService', () => {
       userRepository.updateOneBy.mockResolvedValue(false);
 
       await expect(
-        service.updateUserRole('user123', UserRole.WAITER, UserRole.ADMIN, 'admin123')
+        service.updateUserRole(
+          'user123',
+          UserRole.WAITER,
+          UserRole.ADMIN,
+          'admin123',
+        ),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -521,73 +528,93 @@ describe('UserService', () => {
     });
 
     it('should delete user successfully from both Firebase and MongoDB when called by admin', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.deleteOneBy.mockResolvedValue(true);
       mockFirebaseDeleteUser.mockResolvedValue(true);
 
       const result = await service.deleteUser('user123', UserRole.ADMIN);
 
-      expect(userRepository.findOneByIdWithFirebaseId).toHaveBeenCalledWith('user123');
+      expect(userRepository.findOneByIdWithFirebaseId).toHaveBeenCalledWith(
+        'user123',
+      );
       expect(mockFirebaseDeleteUser).toHaveBeenCalledWith('firebase123');
-      expect(userRepository.deleteOneBy).toHaveBeenCalledWith({ _id: 'user123' });
+      expect(userRepository.deleteOneBy).toHaveBeenCalledWith({
+        _id: 'user123',
+      });
       expect(result).toBe(true);
     });
 
     it('should continue deletion even when Firebase deletion fails', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.deleteOneBy.mockResolvedValue(true);
       mockFirebaseDeleteUser.mockRejectedValue(new Error('Firebase error'));
 
       const result = await service.deleteUser('user123', UserRole.ADMIN);
 
       expect(result).toBe(true);
-      expect(userRepository.deleteOneBy).toHaveBeenCalledWith({ _id: 'user123' });
+      expect(userRepository.deleteOneBy).toHaveBeenCalledWith({
+        _id: 'user123',
+      });
       expect(mockFirebaseDeleteUser).toHaveBeenCalledWith('firebase123');
     });
 
     it('should throw BadRequestException when database deletion fails', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.deleteOneBy.mockResolvedValue(false);
       mockFirebaseDeleteUser.mockResolvedValue(true);
 
-      await expect(service.deleteUser('user123', UserRole.ADMIN)).rejects.toThrow(BadRequestException);
-      
+      await expect(
+        service.deleteUser('user123', UserRole.ADMIN),
+      ).rejects.toThrow(BadRequestException);
+
       expect(mockFirebaseDeleteUser).toHaveBeenCalledWith('firebase123');
     });
 
     it('should throw BadRequestException when user not found', async () => {
       userRepository.findOneByIdWithFirebaseId.mockResolvedValue(null);
 
-      await expect(service.deleteUser('user123', UserRole.ADMIN)).rejects.toThrow(BadRequestException);
-      
+      await expect(
+        service.deleteUser('user123', UserRole.ADMIN),
+      ).rejects.toThrow(BadRequestException);
+
       expect(mockFirebaseDeleteUser).not.toHaveBeenCalled();
     });
 
     it('should continue deletion when Firebase ID is invalid or missing', async () => {
       const mockUserWithoutFirebaseId = { ...mockUser, firebaseId: '' };
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUserWithoutFirebaseId as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUserWithoutFirebaseId as User,
+      );
       userRepository.deleteOneBy.mockResolvedValue(true);
 
       const result = await service.deleteUser('user123', UserRole.ADMIN);
 
       expect(result).toBe(true);
-      expect(userRepository.deleteOneBy).toHaveBeenCalledWith({ _id: 'user123' });
+      expect(userRepository.deleteOneBy).toHaveBeenCalledWith({
+        _id: 'user123',
+      });
       expect(mockFirebaseDeleteUser).not.toHaveBeenCalled();
     });
 
     it('should throw ForbiddenException when non-admin user tries to delete', async () => {
       await expect(
-        service.deleteUser('user123', UserRole.OWNER)
+        service.deleteUser('user123', UserRole.OWNER),
       ).rejects.toThrow(ForbiddenException);
 
       await expect(
-        service.deleteUser('user123', UserRole.MANAGER)
+        service.deleteUser('user123', UserRole.MANAGER),
       ).rejects.toThrow(ForbiddenException);
 
       await expect(
-        service.deleteUser('user123', UserRole.CUSTOMER)
+        service.deleteUser('user123', UserRole.CUSTOMER),
       ).rejects.toThrow(ForbiddenException);
-      
+
       expect(mockFirebaseDeleteUser).not.toHaveBeenCalled();
     });
   });
@@ -598,24 +625,32 @@ describe('UserService', () => {
     });
 
     it('should deactivate user successfully in both MongoDB and Firebase', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
       mockFirebaseUpdateUser.mockResolvedValue(undefined);
 
       const result = await service.deactivateUser('user123');
 
-      expect(userRepository.findOneByIdWithFirebaseId).toHaveBeenCalledWith('user123');
-      expect(mockFirebaseUpdateUser).toHaveBeenCalledWith('firebase123', { disabled: true });
+      expect(userRepository.findOneByIdWithFirebaseId).toHaveBeenCalledWith(
+        'user123',
+      );
+      expect(mockFirebaseUpdateUser).toHaveBeenCalledWith('firebase123', {
+        disabled: true,
+      });
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { isActive: false }
+        { isActive: false },
       );
       expect(result).toEqual(mockUser);
     });
 
     it('should continue deactivation even when Firebase fails', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
       mockFirebaseUpdateUser.mockRejectedValue(new Error('Firebase error'));
@@ -624,14 +659,16 @@ describe('UserService', () => {
 
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { isActive: false }
+        { isActive: false },
       );
       expect(result).toEqual(mockUser);
     });
 
     it('should skip Firebase deactivation when Firebase ID is invalid', async () => {
       const mockUserWithoutFirebaseId = { ...mockUser, firebaseId: '' };
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUserWithoutFirebaseId as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUserWithoutFirebaseId as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
 
@@ -640,7 +677,7 @@ describe('UserService', () => {
       expect(mockFirebaseUpdateUser).not.toHaveBeenCalled();
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { isActive: false }
+        { isActive: false },
       );
       expect(result).toEqual(mockUser);
     });
@@ -648,15 +685,21 @@ describe('UserService', () => {
     it('should throw BadRequestException when user not found', async () => {
       userRepository.findOneByIdWithFirebaseId.mockResolvedValue(null);
 
-      await expect(service.deactivateUser('user123')).rejects.toThrow(BadRequestException);
+      await expect(service.deactivateUser('user123')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockFirebaseUpdateUser).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when MongoDB deactivation fails', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(false);
 
-      await expect(service.deactivateUser('user123')).rejects.toThrow(BadRequestException);
+      await expect(service.deactivateUser('user123')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -666,24 +709,32 @@ describe('UserService', () => {
     });
 
     it('should activate user successfully in both MongoDB and Firebase', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
       mockFirebaseUpdateUser.mockResolvedValue(undefined);
 
       const result = await service.activateUser('user123');
 
-      expect(userRepository.findOneByIdWithFirebaseId).toHaveBeenCalledWith('user123');
-      expect(mockFirebaseUpdateUser).toHaveBeenCalledWith('firebase123', { disabled: false });
+      expect(userRepository.findOneByIdWithFirebaseId).toHaveBeenCalledWith(
+        'user123',
+      );
+      expect(mockFirebaseUpdateUser).toHaveBeenCalledWith('firebase123', {
+        disabled: false,
+      });
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { isActive: true }
+        { isActive: true },
       );
       expect(result).toEqual(mockUser);
     });
 
     it('should continue activation even when Firebase fails', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
       mockFirebaseUpdateUser.mockRejectedValue(new Error('Firebase error'));
@@ -692,14 +743,16 @@ describe('UserService', () => {
 
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { isActive: true }
+        { isActive: true },
       );
       expect(result).toEqual(mockUser);
     });
 
     it('should skip Firebase activation when Firebase ID is invalid', async () => {
       const mockUserWithoutFirebaseId = { ...mockUser, firebaseId: '' };
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUserWithoutFirebaseId as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUserWithoutFirebaseId as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(true);
       userRepository.findOneById.mockResolvedValue(mockUser as User);
 
@@ -708,7 +761,7 @@ describe('UserService', () => {
       expect(mockFirebaseUpdateUser).not.toHaveBeenCalled();
       expect(userRepository.updateOneBy).toHaveBeenCalledWith(
         { _id: 'user123' },
-        { isActive: true }
+        { isActive: true },
       );
       expect(result).toEqual(mockUser);
     });
@@ -716,15 +769,21 @@ describe('UserService', () => {
     it('should throw BadRequestException when user not found', async () => {
       userRepository.findOneByIdWithFirebaseId.mockResolvedValue(null);
 
-      await expect(service.activateUser('user123')).rejects.toThrow(BadRequestException);
+      await expect(service.activateUser('user123')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockFirebaseUpdateUser).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when MongoDB activation fails', async () => {
-      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(mockUser as User);
+      userRepository.findOneByIdWithFirebaseId.mockResolvedValue(
+        mockUser as User,
+      );
       userRepository.updateOneBy.mockResolvedValue(false);
 
-      await expect(service.activateUser('user123')).rejects.toThrow(BadRequestException);
+      await expect(service.activateUser('user123')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

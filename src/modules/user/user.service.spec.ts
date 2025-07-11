@@ -23,7 +23,8 @@ jest.mock('../../configs/firebase.config', () => ({
 
 // Mock axios
 jest.mock('axios');
-const mockedAxios = require('axios');
+import axios from 'axios';
+const mockedAxios = jest.mocked(axios);
 
 // Mock config
 jest.mock('../../configs/config', () => ({

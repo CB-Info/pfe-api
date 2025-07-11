@@ -19,10 +19,9 @@ export class UserService {
     userId: string,
     parameters: UserUpdateDTO,
   ): Promise<User> => {
-    // @ts-expect-error parameters is a DataType
     const updated = await this.userRepository.updateOneBy(
       { _id: userId },
-      parameters,
+      parameters as any,
     );
 
     if (!updated) {

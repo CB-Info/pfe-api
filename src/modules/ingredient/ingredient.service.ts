@@ -50,7 +50,7 @@ export class IngredientService {
       const response = await this.ingredientRepository.findOneBy({ _id: id });
 
       if (!response) {
-        throw new NotFoundException(`Card with ID ${id} not found`);
+        throw new NotFoundException(`Ingredient with ID ${id} not found`);
       }
 
       return response as Ingredient;

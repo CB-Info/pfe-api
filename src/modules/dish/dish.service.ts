@@ -84,7 +84,7 @@ export class DishService {
       );
 
       if (!response) {
-        throw new NotFoundException(`Card with ID ${id} not found`);
+        throw new NotFoundException(`Dish with ID ${id} not found`);
       }
 
       return response as Dish;
@@ -113,7 +113,7 @@ export class DishService {
       return response as Dish;
     } catch (e) {
       console.log(e);
-      if (e.message == 'CastError') {
+      if (e.name == 'CastError') {
         throw new BadRequestException('Invalid ID format');
       }
       throw new InternalServerErrorException(e.message);

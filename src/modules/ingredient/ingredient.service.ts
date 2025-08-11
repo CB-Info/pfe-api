@@ -27,10 +27,10 @@ export class IngredientService {
       return response.toObject({ versionKey: false }) as Ingredient;
     } catch (e) {
       console.log(e);
-      if (e.name === 'ValidationError') {
-        throw new BadRequestException(e.message);
+      if ((e as any).name === 'ValidationError') {
+        throw new BadRequestException((e as any).message);
       }
-      throw new InternalServerErrorException(e.message);
+      throw new InternalServerErrorException((e as any).message);
     }
   }
 
@@ -41,63 +41,65 @@ export class IngredientService {
       return response as Ingredient[];
     } catch (e) {
       console.log(e);
-      throw new InternalServerErrorException(e.message);
+      throw new InternalServerErrorException((e as any).message);
     }
   }
 
   async findOne(id: string): Promise<Ingredient> {
+    let response: Ingredient | null;
     try {
-      const response = await this.ingredientRepository.findOneBy({ _id: id });
-
-      if (!response) {
-        throw new NotFoundException(`Ingredient with ID ${id} not found`);
-      }
-
-      return response as Ingredient;
+      response = (await this.ingredientRepository.findOneBy({ _id: id })) as any;
     } catch (e) {
       console.log(e);
-      if (e.name == 'CastError') {
+      if ((e as any).name == 'CastError') {
         throw new BadRequestException('Invalid ID format');
       }
-      throw new InternalServerErrorException(e.message);
+      throw new InternalServerErrorException((e as any).message);
     }
+
+    if (!response) {
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+    }
+
+    return response as Ingredient;
   }
 
   async updateOne(id: string, ingredientData: DataType): Promise<Ingredient> {
+    let isUpdate: boolean;
     try {
-      const isUpdate = await this.ingredientRepository.updateOneBy(
+      isUpdate = await this.ingredientRepository.updateOneBy(
         { _id: id },
         ingredientData,
       );
-
-      if (!isUpdate) {
-        throw new NotFoundException(`Ingredient with ID ${id} not found`);
-      }
-
-      const response = await this.findOne(id);
-
-      return response as Ingredient;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove ingredient')) {
-        throw new BadRequestException(e.message);
+      if ((e as any).message.includes('Unable to remove ingredient')) {
+        throw new BadRequestException((e as any).message);
       }
-      throw new InternalServerErrorException(e.message);
+      throw new InternalServerErrorException((e as any).message);
     }
+
+    if (!isUpdate) {
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+    }
+
+    const response = await this.findOne(id);
+    return response as Ingredient;
   }
 
   async deleteOne(id: string) {
+    let isDeleted: boolean;
     try {
-      const isDeleted = await this.ingredientRepository.deleteOneBy({
+      isDeleted = await this.ingredientRepository.deleteOneBy({
         _id: id,
       });
-
-      if (!isDeleted) {
-        throw new NotFoundException(`Ingredient with ID ${id} not found`);
-      }
     } catch (e) {
       console.log(e);
-      throw new InternalServerErrorException(e.message);
+      throw new InternalServerErrorException((e as any).message);
+    }
+
+    if (!isDeleted) {
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
     }
   }
 }

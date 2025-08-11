@@ -1,0 +1,39 @@
+{
+  "info": {
+    "name": "ERP Sunday API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Ingredients",
+      "item": [
+        {
+          "name": "List Ingredients",
+          "request": { "method": "GET", "url": "{{baseUrl}}/ingredients" }
+        },
+        {
+          "name": "Create Ingredient",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/ingredients",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Tomato\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dishes",
+      "item": [
+        { "name": "List Dishes", "request": { "method": "GET", "url": "{{baseUrl}}/dishes" } }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        { "name": "List Orders", "request": { "method": "GET", "url": "{{baseUrl}}/orders" } }
+      ]
+    }
+  ],
+  "variable": [ { "key": "baseUrl", "value": "http://localhost:3000" } ]
+}

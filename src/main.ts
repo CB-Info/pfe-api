@@ -2,11 +2,24 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  app.enableCors(); // TODO: A supprimer peut être plus tard
+
+  // Security headers
+  app.use(helmet());
+
+  // Restrict CORS with whitelist from env
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .filter(Boolean);
+  app.enableCors({
+    origin: allowedOrigins.length
+      ? allowedOrigins
+      : [/^http:\/\/localhost(:\d+)?$/],
+  });
 
   const port = process.env.PORT || 3000;
 

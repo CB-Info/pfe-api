@@ -1,5 +1,7 @@
 # ERP Sunday API
 
+[![CI Pipeline](https://github.com/ERP-sunday/API/actions/workflows/ci.yml/badge.svg)](https://github.com/ERP-sunday/API/actions/workflows/ci.yml)
+
 Notre objectif dans le cadre de ce projet est de proposer un ERP fonctionnel qui répondrait à la plupart des attentes des restaurateurs.
 
 ## Fonctionnalités prévues
@@ -38,8 +40,22 @@ La CI/CD est gérée via :
 
 ## Prérequis
 
+- Node.js 20.x et npm
+- MongoDB Atlas (ou une instance MongoDB accessible)
+
 >[!IMPORTANT]
 Pour accéder au Swagger de l'API, il faut se rendre sur le lien: [http://localhost:3000/api#/](http://localhost:3000/api#/)
+
+### Variables d'environnement (.env)
+
+Créer un fichier `.env` à la racine avec au moins :
+
+```
+PORT=3000
+MONGO_URL=mongodb+srv://<user>:<password>@<cluster>/<db>?retryWrites=true&w=majority
+API_KEY=dev-api-key
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+```
 
 ## Installation
 
@@ -57,23 +73,40 @@ cd API
 Ajouter le fichier **credentials.json** dans le dossier **configs** (/src/configs) <br />
 Puis, à la racine du projet, ajouter le fichier **.env**
 
-## Installation
+## Installation des dépendances
 
 ```bash
 npm install
 ```
 
-## Load Fixtures
+## Lancer en développement
+
+```bash
+npm run start:dev
+```
+
+## Build & production
+
+```bash
+npm run build
+npm run start:prod
+```
+
+## Fixtures (optionnel)
 
 ```bash
 npm run load-fixtures
 ```
 
-## Lancer l'app
+## Documentation & Guides
 
-```bash
-npm run start
-```
+- Déploiement: voir `docs/deployment.md`
+- Guide prototype (endpoints CRUD + Postman): `docs/prototype-guide.md`
+- Sécurité: `docs/security.md`
+- Guide API: `docs/user-guide-api.md`
+- Plan de tests: `docs/test_plan.md`
+- Plan de correction: `docs/bug_fix_plan.md`
+- Guide de mise à jour & versioning: `docs/update-guide.md`
 
 ## Contact
 

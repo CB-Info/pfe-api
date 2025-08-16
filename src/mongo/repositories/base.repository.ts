@@ -48,7 +48,7 @@ class BaseRepository<T extends Document> {
   }
 
   async findOneById(_id: string, params?: AdditionalParams): Promise<T | null> {
-    return this.findOneBy({ _id }, params);
+    return this.findOneBy({ _id } as FilterQuery<T>, params);
   }
 
   async deleteOneBy(condition: FilterQuery<T>): Promise<boolean> {

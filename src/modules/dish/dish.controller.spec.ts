@@ -57,7 +57,7 @@ describe('DishController', () => {
           _id: 'ingredient123',
           name: 'Pasta',
         },
-        unity: 'g',
+        unity: DishIngredientUnity.MILLILITRE,
         quantity: 100,
       },
       {
@@ -65,13 +65,13 @@ describe('DishController', () => {
           _id: 'ingredient456',
           name: 'Bacon',
         },
-        unity: 'g',
+        unity: DishIngredientUnity.CENTILITRE,
         quantity: 50,
       },
     ],
     price: 12.99,
     description: 'Classic Italian pasta dish',
-    category: 'Main Course',
+    category: DishCategory.PASTA_RICE,
     timeCook: 20,
     isAvailable: true,
     dateOfCreation: '2024-01-01',
@@ -232,7 +232,7 @@ describe('DishController', () => {
 
   describe('toResponseDto', () => {
     it('should convert dish to response DTO correctly', () => {
-      const result = controller['toResponseDto'](mockDish);
+      const result = controller['toResponseDto'](mockDish as any);
 
       expect(result).toEqual(mockDishResponseDTO);
       expect(result._id).toBe(mockDish._id.toString());
@@ -242,7 +242,7 @@ describe('DishController', () => {
 
     it('should handle empty ingredients array', () => {
       const dishWithoutIngredients = { ...mockDish, ingredients: [] };
-      const result = controller['toResponseDto'](dishWithoutIngredients);
+      const result = controller['toResponseDto'](dishWithoutIngredients as any);
 
       expect(result.ingredients).toEqual([]);
     });
@@ -257,19 +257,19 @@ describe('DishController', () => {
               name: 'Complex Ingredient',
               additionalData: 'should be ignored',
             },
-            unity: 'ml',
+            unity: DishIngredientUnity.MILLILITRE,
             quantity: 250,
           },
         ],
       };
 
-      const result = controller['toResponseDto'](complexDish);
+      const result = controller['toResponseDto'](complexDish as any);
 
       expect(result.ingredients[0].ingredientRef).toEqual({
         _id: 'complex123',
         name: 'Complex Ingredient',
       });
-      expect(result.ingredients[0].unity).toBe('ml');
+      expect(result.ingredients[0].unity).toBe(DishIngredientUnity.MILLILITRE);
       expect(result.ingredients[0].quantity).toBe(250);
     });
   });

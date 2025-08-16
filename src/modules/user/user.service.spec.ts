@@ -370,17 +370,19 @@ describe('UserService', () => {
       );
       mockUserRepository.deleteOneBy.mockResolvedValue(true);
 
+      // Get Firebase mock and setup method mock
       const firebaseMock = require('src/configs/firebase.config').default;
-      firebaseMock.auth().deleteUser.mockResolvedValue(undefined);
+      const deleteUserMock = jest.fn().mockResolvedValue(undefined);
+      firebaseMock.auth = jest.fn(() => ({
+        deleteUser: deleteUserMock,
+      }));
 
       const result = await service.deleteUser('user123', UserRole.ADMIN);
 
       expect(repository.findOneByIdWithFirebaseId).toHaveBeenCalledWith(
         'user123',
       );
-      expect(firebaseMock.auth().deleteUser).toHaveBeenCalledWith(
-        'firebase123',
-      );
+      expect(deleteUserMock).toHaveBeenCalledWith('firebase123');
       expect(repository.deleteOneBy).toHaveBeenCalledWith({ _id: 'user123' });
       expect(result).toBe(true);
     });
@@ -399,7 +401,10 @@ describe('UserService', () => {
       mockUserRepository.deleteOneBy.mockResolvedValue(true);
 
       const firebaseMock = require('src/configs/firebase.config').default;
-      firebaseMock.auth().deleteUser.mockRejectedValue(new Error('Firebase error'));
+      const deleteUserMock = jest.fn().mockRejectedValue(new Error('Firebase error'));
+      firebaseMock.auth = jest.fn(() => ({
+        deleteUser: deleteUserMock,
+      }));
 
       const result = await service.deleteUser('user123', UserRole.ADMIN);
 
@@ -440,14 +445,17 @@ describe('UserService', () => {
       });
 
       const firebaseMock = require('src/configs/firebase.config').default;
-      firebaseMock.auth().updateUser.mockResolvedValue(undefined);
+      const updateUserMock = jest.fn().mockResolvedValue(undefined);
+      firebaseMock.auth = jest.fn(() => ({
+        updateUser: updateUserMock,
+      }));
 
       const result = await service.deactivateUser('user123');
 
       expect(repository.findOneByIdWithFirebaseId).toHaveBeenCalledWith(
         'user123',
       );
-      expect(firebaseMock.auth().updateUser).toHaveBeenCalledWith(
+      expect(updateUserMock).toHaveBeenCalledWith(
         'firebase123',
         { disabled: true },
       );
@@ -470,7 +478,10 @@ describe('UserService', () => {
       });
 
       const firebaseMock = require('src/configs/firebase.config').default;
-      firebaseMock.auth().updateUser.mockRejectedValue(new Error('Firebase error'));
+      const updateUserMock = jest.fn().mockRejectedValue(new Error('Firebase error'));
+      firebaseMock.auth = jest.fn(() => ({
+        updateUser: updateUserMock,
+      }));
 
       const result = await service.deactivateUser('user123');
 
@@ -491,11 +502,14 @@ describe('UserService', () => {
       });
 
       const firebaseMock = require('src/configs/firebase.config').default;
-      firebaseMock.auth().updateUser.mockResolvedValue(undefined);
+      const updateUserMock = jest.fn().mockResolvedValue(undefined);
+      firebaseMock.auth = jest.fn(() => ({
+        updateUser: updateUserMock,
+      }));
 
       const result = await service.activateUser('user123');
 
-      expect(firebaseMock.auth().updateUser).toHaveBeenCalledWith(
+      expect(updateUserMock).toHaveBeenCalledWith(
         'firebase123',
         { disabled: false },
       );

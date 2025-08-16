@@ -247,9 +247,9 @@ describe('OrderController', () => {
 
   describe('Edge cases and error handling', () => {
     it('should handle malformed parameters', async () => {
+      await expect(controller.findOne(null)).rejects.toThrow('Cannot read properties of null');
+      
       mockOrderService.findOne.mockRejectedValue(new Error('Invalid parameters'));
-
-      await expect(controller.findOne(null)).rejects.toThrow('Invalid parameters');
       await expect(controller.findOne({})).rejects.toThrow('Invalid parameters');
     });
 

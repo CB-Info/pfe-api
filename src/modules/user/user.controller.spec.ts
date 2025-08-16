@@ -5,6 +5,19 @@ import { UserRole } from 'src/mongo/models/user.model';
 import { UserDTO } from 'src/dto/user.dto';
 import { UserUpdateDTO } from 'src/dto/user.update.dto';
 
+// Mock Firebase config to prevent credentials.json error
+jest.mock('src/configs/firebase.config', () => ({
+  __esModule: true,
+  default: {
+    auth: () => ({
+      verifyIdToken: jest.fn(),
+      getUser: jest.fn(),
+      deleteUser: jest.fn(),
+      updateUser: jest.fn(),
+    }),
+  },
+}));
+
 describe('UserController', () => {
   let controller: UserController;
   let service: UserService;
@@ -51,6 +64,12 @@ describe('UserController', () => {
         {
           provide: UserService,
           useValue: mockUserService,
+        },
+        {
+          provide: 'UserRepository',
+          useValue: {
+            findOneBy: jest.fn(),
+          },
         },
       ],
     }).compile();

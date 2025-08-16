@@ -10,6 +10,7 @@ jest.mock('src/configs/firebase.config', () => ({
   default: {
     auth: () => ({
       verifyIdToken: jest.fn(),
+      getUser: jest.fn(),
     }),
   },
 }));

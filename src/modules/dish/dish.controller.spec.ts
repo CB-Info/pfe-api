@@ -6,6 +6,17 @@ import { DishCategory, DishIngredientUnity } from 'src/mongo/models/dish.model';
 import { DishDTO } from 'src/dto/creation/dish.dto';
 import { DishResponseDTO } from 'src/dto/response/dish.response.dto';
 
+// Mock Firebase config to prevent credentials.json error
+jest.mock('src/configs/firebase.config', () => ({
+  __esModule: true,
+  default: {
+    auth: () => ({
+      verifyIdToken: jest.fn(),
+      getUser: jest.fn(),
+    }),
+  },
+}));
+
 describe('DishController', () => {
   let controller: DishController;
   let service: DishService;

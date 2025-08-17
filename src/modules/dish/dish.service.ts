@@ -49,7 +49,7 @@ export class DishService {
         isAvailable: dishData.isAvailable,
       });
 
-      return response.toObject({ versionKey: false }) as Dish;
+      return response as Dish;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {
@@ -84,7 +84,7 @@ export class DishService {
       );
 
       if (!response) {
-        throw new NotFoundException(`Dish with ID ${id} not found`);
+        throw new NotFoundException(`Card with ID ${id} not found`);
       }
 
       return response as Dish;
@@ -113,7 +113,7 @@ export class DishService {
       return response as Dish;
     } catch (e) {
       console.log(e);
-      if (e.name == 'CastError') {
+      if (e.message == 'CastError') {
         throw new BadRequestException('Invalid ID format');
       }
       throw new InternalServerErrorException(e.message);
@@ -122,7 +122,7 @@ export class DishService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.dishRepository.deleteOneBy({ _id: id });
+      const isDeleted = await this.dishRepository.deleteOnyBy({ _id: id });
 
       if (!isDeleted) {
         throw new NotFoundException(`Dish with ID ${id} not found`);

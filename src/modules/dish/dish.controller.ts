@@ -26,7 +26,7 @@ import { DishResponseDTO } from 'src/dto/response/dish.response.dto';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 import { DataType } from 'src/mongo/repositories/base.repository';
 
-@ApiTags('Dishes')
+@ApiTags('🍽️ Dishes')
 @Controller('dishes')
 export class DishController {
   constructor(private readonly dishService: DishService) {}
@@ -145,6 +145,8 @@ export class DishController {
           ingredientRef: {
             _id: ingredientData._id,
             name: ingredientData.name,
+            dateOfCreation: ingredientData.dateOfCreation || '',
+            dateLastModified: ingredientData.dateLastModified,
           },
           unity: ingredient.unity,
           quantity: ingredient.quantity,

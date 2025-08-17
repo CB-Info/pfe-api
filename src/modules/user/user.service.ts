@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Injectable,
   ForbiddenException,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserRepository } from 'src/mongo/repositories/user.repository';
-import { UserDTO } from 'src/dto/user.dto';
+import { UserDTO, LoginDTO } from 'src/dto/user.dto';
 import { User, UserRole } from 'src/mongo/models/user.model';
 import config from 'src/configs/config';
 import firebase from 'src/configs/firebase.config';
@@ -60,6 +62,51 @@ export class UserService {
     } catch (e) {
       console.log(e);
       throw new BadRequestException();
+    }
+  };
+
+  loginUser = async (
+    parameters: LoginDTO,
+  ): Promise<{ user: User; token: string }> => {
+    try {
+      const { email, password } = parameters;
+      const data = JSON.stringify({ email, password, returnSecureToken: true });
+
+      const result = await axios({
+        method: 'post',
+        url: `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${config().apiKey}`,
+        headers: { 'Content-Type': 'application/json' },
+        data: data,
+      });
+
+      const { localId: firebaseId, idToken } = result.data;
+
+      // Find user in database
+      const user = await this.userRepository.findOneBy({ firebaseId });
+      if (!user) {
+        throw new UnauthorizedException('User not found in database');
+      }
+
+      if (!user.isActive) {
+        throw new UnauthorizedException('User account is deactivated');
+      }
+
+      return { user, token: idToken };
+    } catch (e) {
+      console.log('Login error:', e);
+      if (e instanceof UnauthorizedException) {
+        throw e;
+      }
+      if (e.response?.data?.error?.message === 'INVALID_PASSWORD') {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+      if (e.response?.data?.error?.message === 'EMAIL_NOT_FOUND') {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+      if (e.response?.data?.error?.message === 'USER_DISABLED') {
+        throw new UnauthorizedException('User account has been disabled');
+      }
+      throw new UnauthorizedException('Login failed');
     }
   };
 
@@ -402,7 +449,24 @@ export class UserService {
 
   // Get user by ID
   getUserById = async (userId: string): Promise<User> => {
-    return this.userRepository.findOneById(userId);
+    try {
+      const user = await this.userRepository.findOneById(userId);
+
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+
+      return user;
+    } catch (e) {
+      console.log(e);
+      if (e instanceof NotFoundException) {
+        throw e;
+      }
+      if (e.name === 'CastError') {
+        throw new BadRequestException('Invalid ID format');
+      }
+      throw new BadRequestException(e.message);
+    }
   };
 
   // Legacy methods (kept for backward compatibility)

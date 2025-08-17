@@ -5,6 +5,8 @@ import { UserRepository } from 'src/mongo/repositories/user.repository';
 import { DishCategory, DishIngredientUnity } from 'src/mongo/models/dish.model';
 import { DishDTO } from 'src/dto/creation/dish.dto';
 import { DishResponseDTO } from 'src/dto/response/dish.response.dto';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 // Mock Firebase config to prevent credentials.json error
 jest.mock('src/configs/firebase.config', () => ({
@@ -113,7 +115,12 @@ describe('DishController', () => {
           useValue: {},
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(FirebaseTokenGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<DishController>(DishController);
     service = module.get<DishService>(DishService);

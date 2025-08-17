@@ -11,6 +11,33 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
+export class DishIngredientDTO {
+  @ApiProperty({
+    description: 'ID of the ingredient used in this dish',
+    example: '607f1f77bcf86cd799439011',
+    format: 'ObjectId',
+  })
+  @IsString()
+  ingredientId: string;
+
+  @ApiProperty({
+    enum: DishIngredientUnity,
+    enumName: 'DishIngredientUnity',
+    description: 'Unit of measurement for the ingredient quantity',
+    example: DishIngredientUnity.MILLILITRE,
+  })
+  @IsEnum(DishIngredientUnity)
+  unity: DishIngredientUnity;
+
+  @ApiProperty({
+    description: 'Quantity of the ingredient needed',
+    example: 200,
+    minimum: 0,
+  })
+  @IsNumber()
+  quantity: number;
+}
+
 export class DishDTO {
   @ApiProperty({
     description: 'Name of the dish (must be unique)',
@@ -22,8 +49,14 @@ export class DishDTO {
 
   @ApiProperty({
     description: 'List of ingredients required for this dish',
-    type: 'DishIngredientDTO',
-    isArray: true,
+    type: [DishIngredientDTO],
+    example: [
+      {
+        ingredientId: '607f1f77bcf86cd799439011',
+        unity: 'MILLILITRE',
+        quantity: 200,
+      },
+    ],
   })
   @IsArray()
   @ValidateNested({ each: true })
@@ -73,31 +106,4 @@ export class DishDTO {
   })
   @IsBoolean()
   isAvailable: boolean;
-}
-
-export class DishIngredientDTO {
-  @ApiProperty({
-    description: 'ID of the ingredient used in this dish',
-    example: '607f1f77bcf86cd799439011',
-    format: 'ObjectId',
-  })
-  @IsString()
-  ingredientId: string;
-
-  @ApiProperty({
-    enum: DishIngredientUnity,
-    enumName: 'DishIngredientUnity',
-    description: 'Unit of measurement for the ingredient quantity',
-    example: DishIngredientUnity.MILLILITRE,
-  })
-  @IsEnum(DishIngredientUnity)
-  unity: DishIngredientUnity;
-
-  @ApiProperty({
-    description: 'Quantity of the ingredient needed',
-    example: 200,
-    minimum: 0,
-  })
-  @IsNumber()
-  quantity: number;
 }

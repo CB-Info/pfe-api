@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import app from 'src/configs/firebase.config';
 import { UserRepository } from 'src/mongo/repositories/user.repository';
 
@@ -19,7 +24,7 @@ export class FirebaseTokenGuard implements CanActivate {
 
       return true;
     } catch {
-      return false;
+      throw new UnauthorizedException('Invalid or expired token');
     }
   }
 }

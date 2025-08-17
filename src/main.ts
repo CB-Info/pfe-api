@@ -37,7 +37,7 @@ async function bootstrap() {
   );
 
   // Rate limiting is configured globally via APP_GUARD in app.module.ts
-  console.log('⚡ Rate Limiting enabled: 3 requests per 10 seconds');
+  console.log('⚡ Rate Limiting enabled: 100 requests per 10 seconds');
 
   // CORS configuration - Simple and functional
   const allowedOrigins = process.env.ALLOWED_ORIGINS

@@ -8,13 +8,18 @@ import {
   Post,
   HttpStatus,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiSecurity } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { Order } from 'src/mongo/models/order.model';
 import { DataType } from 'src/mongo/repositories/base.repository';
 import { Response } from 'src/utils/response';
 import { OrderDTO } from 'src/dto/order.dto';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/guards/roles.decorator';
+import { UserRole } from 'src/mongo/models/user.model';
 
 @Controller('orders')
 @ApiTags('🛒 Orders')
@@ -22,6 +27,16 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.CUSTOMER,
+    UserRole.WAITER,
+    UserRole.KITCHEN_STAFF,
+    UserRole.MANAGER,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.CREATED)
   async createOne(@Body() orderData: OrderDTO): Promise<Response<Order>> {
     const response = await this.orderService.createOne(orderData);
@@ -30,6 +45,8 @@ export class OrderController {
   }
 
   @Get()
+  @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   async findAll(): Promise<Response<Order[]>> {
     const response = await this.orderService.findAll();
@@ -38,6 +55,8 @@ export class OrderController {
   }
 
   @Get(':id')
+  @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param() params: any): Promise<Response<Order>> {
     const response = await this.orderService.findOne(params.id);
@@ -46,6 +65,15 @@ export class OrderController {
   }
 
   @Put(':id')
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.WAITER,
+    UserRole.MANAGER,
+    UserRole.KITCHEN_STAFF,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   async updateOne(
     @Param() params: any,
@@ -57,6 +85,15 @@ export class OrderController {
   }
 
   @Delete(':id')
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.WAITER,
+    UserRole.MANAGER,
+    UserRole.KITCHEN_STAFF,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOne(@Param() params: any) {
     await this.orderService.deleteOne(params.id);

@@ -30,8 +30,16 @@ export class CardResponseDTO {
   @ApiProperty({
     description:
       'List of dishes included in this menu card (populated from dishesId)',
-    type: 'DishResponseDTO',
-    isArray: true,
+    type: [DishResponseDTO],
+    example: [
+      {
+        _id: '607f1f77bcf86cd799439012',
+        name: 'Spaghetti Carbonara',
+        price: 15.5,
+        category: 'MAIN_DISHES',
+        isAvailable: true,
+      },
+    ],
   })
   @IsArray()
   @ValidateNested({ each: true })

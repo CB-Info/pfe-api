@@ -12,6 +12,38 @@ import { Type } from 'class-transformer';
 import { IngredientResponseDTO } from './ingredient.response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
+export class DishIngredientResponseDTO {
+  @ApiProperty({
+    description: 'Ingredient details',
+    type: IngredientResponseDTO,
+    example: {
+      _id: '607f1f77bcf86cd799439011',
+      name: 'Tomate',
+      dateOfCreation: '2024-01-15 14:30:00',
+    },
+  })
+  @ValidateNested()
+  @Type(() => IngredientResponseDTO)
+  ingredientRef: IngredientResponseDTO;
+
+  @ApiProperty({
+    enum: DishIngredientUnity,
+    enumName: 'DishIngredientUnity',
+    description: 'Unit of measurement for the ingredient quantity',
+    example: DishIngredientUnity.MILLILITRE,
+  })
+  @IsEnum(DishIngredientUnity)
+  unity: DishIngredientUnity;
+
+  @ApiProperty({
+    description: 'Quantity of the ingredient needed',
+    example: 200,
+    minimum: 0,
+  })
+  @IsNumber()
+  quantity: number;
+}
+
 export class DishResponseDTO {
   @ApiProperty({
     description: 'Unique identifier of the dish',
@@ -30,8 +62,17 @@ export class DishResponseDTO {
 
   @ApiProperty({
     description: 'List of ingredients with quantities used in this dish',
-    type: 'DishIngredientResponseDTO',
-    isArray: true,
+    type: [DishIngredientResponseDTO],
+    example: [
+      {
+        ingredientRef: {
+          _id: '607f1f77bcf86cd799439011',
+          name: 'Tomate',
+        },
+        unity: 'MILLILITRE',
+        quantity: 200,
+      },
+    ],
   })
   @IsArray()
   @ValidateNested({ each: true })
@@ -97,31 +138,4 @@ export class DishResponseDTO {
   @IsOptional()
   @IsString()
   dateLastModified?: string;
-}
-
-export class DishIngredientResponseDTO {
-  @ApiProperty({
-    description: 'Ingredient details',
-    type: 'IngredientResponseDTO',
-  })
-  @ValidateNested()
-  @Type(() => IngredientResponseDTO)
-  ingredientRef: IngredientResponseDTO;
-
-  @ApiProperty({
-    enum: DishIngredientUnity,
-    enumName: 'DishIngredientUnity',
-    description: 'Unit of measurement for the ingredient quantity',
-    example: DishIngredientUnity.MILLILITRE,
-  })
-  @IsEnum(DishIngredientUnity)
-  unity: DishIngredientUnity;
-
-  @ApiProperty({
-    description: 'Quantity of the ingredient needed',
-    example: 200,
-    minimum: 0,
-  })
-  @IsNumber()
-  quantity: number;
 }

@@ -23,7 +23,7 @@ export class RestaurantTableService {
         number: restaurantTableData.number,
       });
 
-      return response.toObject({ versionKey: false }) as RestaurantTable;
+      return response as RestaurantTable;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {
@@ -83,7 +83,7 @@ export class RestaurantTableService {
       return response as RestaurantTable;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to update table')) {
+      if (e.message.includes('Unable to remove dish')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -92,12 +92,12 @@ export class RestaurantTableService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.restaurantTableRepository.deleteOneBy({
+      const isDeleted = await this.restaurantTableRepository.deleteOnyBy({
         _id: id,
       });
 
       if (!isDeleted) {
-        throw new NotFoundException(`Table with ID ${id} not found`);
+        throw new NotFoundException(`Order with ID ${id} not found`);
       }
     } catch (e) {
       console.log(e);

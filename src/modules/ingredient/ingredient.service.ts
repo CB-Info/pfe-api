@@ -24,7 +24,7 @@ export class IngredientService {
         name: ingredientData.name,
       });
 
-      return response.toObject({ versionKey: false }) as Ingredient;
+      return response as Ingredient;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {
@@ -50,7 +50,7 @@ export class IngredientService {
       const response = await this.ingredientRepository.findOneBy({ _id: id });
 
       if (!response) {
-        throw new NotFoundException(`Ingredient with ID ${id} not found`);
+        throw new NotFoundException(`Card with ID ${id} not found`);
       }
 
       return response as Ingredient;
@@ -79,7 +79,7 @@ export class IngredientService {
       return response as Ingredient;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove ingredient')) {
+      if (e.message.includes('Unable to remove dish')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -88,12 +88,12 @@ export class IngredientService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.ingredientRepository.deleteOneBy({
+      const isDeleted = await this.ingredientRepository.deleteOnyBy({
         _id: id,
       });
 
       if (!isDeleted) {
-        throw new NotFoundException(`Ingredient with ID ${id} not found`);
+        throw new NotFoundException(`Dish with ID ${id} not found`);
       }
     } catch (e) {
       console.log(e);

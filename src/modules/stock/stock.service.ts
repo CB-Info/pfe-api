@@ -20,7 +20,7 @@ export class StockService {
         ingredients: stockData.ingredients,
       });
 
-      return response.toObject({ versionKey: false }) as Stock;
+      return response as Stock;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {
@@ -75,7 +75,7 @@ export class StockService {
       return response as Stock;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to update stock')) {
+      if (e.message.includes('Unable to remove dish')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -84,10 +84,10 @@ export class StockService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.stockRepository.deleteOneBy({ _id: id });
+      const isDeleted = await this.stockRepository.deleteOnyBy({ _id: id });
 
       if (!isDeleted) {
-        throw new NotFoundException(`Stock with ID ${id} not found`);
+        throw new NotFoundException(`Order with ID ${id} not found`);
       }
     } catch (e) {
       console.log(e);

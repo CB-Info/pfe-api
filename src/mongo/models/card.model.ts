@@ -7,7 +7,7 @@ export class Card extends Document {
   @Prop({ type: String, required: true, unique: true, trim: true })
   name: string;
 
-  @Prop([{ type: Types.ObjectId, ref: 'Dish', required: true }])
+  @Prop([{ type: Types.ObjectId, ref: 'Dish', required: true, unique: true }])
   dishesId: Types.ObjectId[];
 
   @Prop({ type: Boolean, required: true, default: false })

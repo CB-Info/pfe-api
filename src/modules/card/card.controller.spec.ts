@@ -5,6 +5,17 @@ import { CardDTO } from 'src/dto/card.dto';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 
+// Mock Firebase config to prevent credentials.json error
+jest.mock('src/configs/firebase.config', () => ({
+  __esModule: true,
+  default: {
+    auth: () => ({
+      verifyIdToken: jest.fn(),
+      getUser: jest.fn(),
+    }),
+  },
+}));
+
 // Mock data
 const mockCard = {
   _id: 'card123',

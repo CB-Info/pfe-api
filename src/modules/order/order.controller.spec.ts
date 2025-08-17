@@ -6,6 +6,17 @@ import { OrderDTO } from 'src/dto/order.dto';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 
+// Mock Firebase config to prevent credentials.json error
+jest.mock('src/configs/firebase.config', () => ({
+  __esModule: true,
+  default: {
+    auth: () => ({
+      verifyIdToken: jest.fn(),
+      getUser: jest.fn(),
+    }),
+  },
+}));
+
 describe('OrderController', () => {
   let controller: OrderController;
   let service: OrderService;

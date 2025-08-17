@@ -5,6 +5,17 @@ import { StockDTO, IngredientItemDTO } from 'src/dto/stock.dto';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 
+// Mock Firebase config to prevent credentials.json error
+jest.mock('src/configs/firebase.config', () => ({
+  __esModule: true,
+  default: {
+    auth: () => ({
+      verifyIdToken: jest.fn(),
+      getUser: jest.fn(),
+    }),
+  },
+}));
+
 // Mock data
 const mockIngredientItem: IngredientItemDTO = {
   ingredientId: '507f1f77bcf86cd799439011',

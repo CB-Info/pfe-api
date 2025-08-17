@@ -11,6 +11,7 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CardService } from './card.service';
 import { CardDTO } from 'src/dto/card.dto';
 import { Response } from 'src/utils/response';
@@ -18,6 +19,7 @@ import { Card } from 'src/mongo/models/card.model';
 import { DataType } from 'src/mongo/repositories/base.repository';
 
 @Controller('cards')
+@ApiTags('📋 Cards')
 export class CardController {
   constructor(private readonly cardService: CardService) {}
 

@@ -68,6 +68,8 @@ describe('DishController', () => {
         ingredientRef: {
           _id: 'ingredient123',
           name: 'Pasta',
+          dateOfCreation: '',
+          dateLastModified: undefined,
         },
         unity: DishIngredientUnity.MILLILITRE,
         quantity: 100,
@@ -76,6 +78,8 @@ describe('DishController', () => {
         ingredientRef: {
           _id: 'ingredient456',
           name: 'Bacon',
+          dateOfCreation: '',
+          dateLastModified: undefined,
         },
         unity: DishIngredientUnity.CENTILITRE,
         quantity: 50,
@@ -302,6 +306,8 @@ describe('DishController', () => {
       expect(result.ingredients[0].ingredientRef).toEqual({
         _id: 'complex123',
         name: 'Complex Ingredient',
+        dateOfCreation: '',
+        dateLastModified: undefined,
       });
       expect(result.ingredients[0].unity).toBe(DishIngredientUnity.MILLILITRE);
       expect(result.ingredients[0].quantity).toBe(250);

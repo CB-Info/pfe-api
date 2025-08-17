@@ -24,22 +24,97 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { UserDTO } from 'src/dto/user.dto';
+import { UserDTO, LoginDTO } from 'src/dto/user.dto';
 import { UserUpdateDTO } from 'src/dto/user.update.dto';
 import { UserRole } from 'src/mongo/models/user.model';
 
 @Controller('users')
-@ApiTags('Users')
+@ApiTags('👥 Users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '🔐 Se connecter',
+    description:
+      'Authentifie un utilisateur existant et retourne un token JWT pour accéder aux endpoints protégés',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Connexion réussie - Token JWT retourné',
+    schema: {
+      type: 'object',
+      properties: {
+        error: { type: 'string', example: '' },
+        data: {
+          type: 'object',
+          properties: {
+            user: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string', example: '607f1f77bcf86cd799439011' },
+                email: { type: 'string', example: 'john.doe@restaurant.com' },
+                firstname: { type: 'string', example: 'John' },
+                lastname: { type: 'string', example: 'Doe' },
+                role: { type: 'string', example: 'customer' },
+                phoneNumber: { type: 'string', example: '+33123456789' },
+                isActive: { type: 'boolean', example: true },
+                dateOfCreation: {
+                  type: 'string',
+                  example: '2024-01-15 14:30:00',
+                },
+              },
+            },
+            token: {
+              type: 'string',
+              example: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...',
+              description: 'JWT token à utiliser dans le bouton "Authorize"',
+            },
+            message: {
+              type: 'string',
+              example:
+                '✅ Connexion réussie ! Copiez le token ci-dessus et utilisez-le dans "Authorize" 🔓',
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Email/mot de passe invalide ou compte désactivé',
+  })
+  @ApiBody({ type: LoginDTO })
+  async loginUser(@Body() body: LoginDTO) {
+    const response = await this.userService.loginUser(body);
+
+    return {
+      error: '',
+      data: {
+        user: response.user,
+        token: response.token,
+        message:
+          '✅ Connexion réussie ! Copiez le token ci-dessus et utilisez-le dans "Authorize" 🔓',
+      },
+    };
+  }
+
   @Post('')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new user' })
+  @ApiOperation({
+    summary: 'Créer un nouvel utilisateur',
+    description:
+      'Enregistre un nouvel utilisateur dans le système avec authentification Firebase',
+  })
   @ApiResponse({
     status: 201,
-    description: 'The user has been successfully created.',
+    description: 'Utilisateur créé avec succès',
     type: UserDTO,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Données invalides ou utilisateur déjà existant',
   })
   @ApiBody({ type: UserDTO })
   async createUser(@Body() body: UserDTO) {
@@ -52,11 +127,19 @@ export class UserController {
   @UseGuards(FirebaseTokenGuard)
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get current user' })
+  @ApiOperation({
+    summary: 'Obtenir mes informations',
+    description:
+      "Récupère les informations de l'utilisateur connecté via son token JWT",
+  })
   @ApiResponse({
     status: 200,
-    description: 'The current user information.',
+    description: "Informations de l'utilisateur connecté",
     type: UserDTO,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalide ou expiré',
   })
   async getMe(@Req() request) {
     const response = request.user;

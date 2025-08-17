@@ -17,7 +17,10 @@ if (process.env.NODE_ENV === 'test') {
   let firebaseAccount: any;
 
   const secretPath = '/etc/secrets/credentials.json';
-  const localPath = path.resolve(process.cwd(), './src/configs/credentials.json');
+  const localPath = path.resolve(
+    process.cwd(),
+    './src/configs/credentials.json',
+  );
 
   if (fs.existsSync(secretPath)) {
     // 👉 Environnement Render
@@ -26,7 +29,9 @@ if (process.env.NODE_ENV === 'test') {
     // 👉 Environnement local
     firebaseAccount = JSON.parse(fs.readFileSync(localPath, 'utf8'));
   } else {
-    throw new Error('❌ credentials.json introuvable dans aucun environnement.');
+    throw new Error(
+      '❌ credentials.json introuvable dans aucun environnement.',
+    );
   }
 
   const firebaseParams = {

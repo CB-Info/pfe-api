@@ -24,6 +24,9 @@ import { Dish } from 'src/mongo/models/dish.model';
 import { DishDTO } from 'src/dto/creation/dish.dto';
 import { DishResponseDTO } from 'src/dto/response/dish.response.dto';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/guards/roles.decorator';
+import { UserRole } from 'src/mongo/models/user.model';
 import { DataType } from 'src/mongo/repositories/base.repository';
 
 @ApiTags('🍽️ Dishes')
@@ -44,7 +47,13 @@ export class DishController {
   }
 
   @Post()
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.MANAGER,
+    UserRole.KITCHEN_STAFF,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new dish' })
   @ApiResponse({
@@ -100,7 +109,13 @@ export class DishController {
   }
 
   @Put(':id')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.MANAGER,
+    UserRole.KITCHEN_STAFF,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a dish by ID' })
   @ApiResponse({
@@ -121,7 +136,13 @@ export class DishController {
   }
 
   @Delete(':id')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.MANAGER,
+    UserRole.KITCHEN_STAFF,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a dish by ID' })
   @ApiResponse({

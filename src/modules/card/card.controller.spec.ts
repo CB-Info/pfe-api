@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CardController } from './card.controller';
 import { CardService } from './card.service';
 import { CardDTO } from 'src/dto/card.dto';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 // Mock data
 const mockCard = {
@@ -43,7 +45,12 @@ describe('CardController', () => {
           useValue: mockCardService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(FirebaseTokenGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<CardController>(CardController);
     service = module.get<CardService>(CardService);

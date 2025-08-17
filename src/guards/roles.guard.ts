@@ -12,6 +12,7 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
+    // Si aucun rôle n'est requis, on laisse passer
     if (!requiredRoles) {
       return true;
     }
@@ -19,6 +20,7 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
+    // Si l'utilisateur n'existe pas ou n'a pas de rôle, on refuse l'accès
     if (!user || !user.role) {
       return false;
     }

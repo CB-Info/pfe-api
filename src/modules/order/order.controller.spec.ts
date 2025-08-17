@@ -3,6 +3,8 @@ import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { OrderStatus } from 'src/mongo/models/order.model';
 import { OrderDTO } from 'src/dto/order.dto';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 describe('OrderController', () => {
   let controller: OrderController;
@@ -45,7 +47,12 @@ describe('OrderController', () => {
           useValue: mockOrderService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(FirebaseTokenGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<OrderController>(OrderController);
     service = module.get<OrderService>(OrderService);

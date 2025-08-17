@@ -11,7 +11,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiSecurity } from '@nestjs/swagger';
 import { IngredientService } from './ingredient.service';
 import { IngredientDTO } from 'src/dto/creation/ingredient.dto';
 import { Ingredient } from 'src/mongo/models/ingredient.model';
@@ -26,6 +26,7 @@ export class IngredientController {
 
   @Post()
   @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.CREATED)
   async createOne(
     @Body() ingredientData: IngredientDTO,
@@ -37,6 +38,7 @@ export class IngredientController {
 
   @Get('/search')
   @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   async searchIngredients(
     @Query('name') name: string,
   ): Promise<Response<Ingredient[]>> {
@@ -47,6 +49,7 @@ export class IngredientController {
 
   @Get()
   @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   async findAll(): Promise<Response<Ingredient[]>> {
     const response = await this.ingredientService.findAll();
@@ -56,6 +59,7 @@ export class IngredientController {
 
   @Get(':id')
   @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param() params: any): Promise<Response<Ingredient>> {
     const response = await this.ingredientService.findOne(params.id);
@@ -65,6 +69,7 @@ export class IngredientController {
 
   @Put(':id')
   @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   async updateOne(
     @Param() params: any,
@@ -80,6 +85,7 @@ export class IngredientController {
 
   @Delete(':id')
   @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOne(@Param() params: any) {
     await this.ingredientService.deleteOne(params.id);

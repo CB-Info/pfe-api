@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { StockController } from './stock.controller';
 import { StockService } from './stock.service';
 import { StockDTO, IngredientItemDTO } from 'src/dto/stock.dto';
+import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 // Mock data
 const mockIngredientItem: IngredientItemDTO = {
@@ -47,7 +49,12 @@ describe('StockController', () => {
           useValue: mockStockService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(FirebaseTokenGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<StockController>(StockController);
     service = module.get<StockService>(StockService);

@@ -1,4 +1,3 @@
-// fixtures.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -52,12 +51,14 @@ export class FixturesService {
       });
     }
 
+    const categories = Object.values(DishCategory);
+
     const dishFixtures = Array.from({ length: 10 }).map(() => ({
       name: faker.commerce.productName(),
       ingredients: ingredients,
       price: faker.commerce.price({ max: 100 }),
       description: faker.commerce.productDescription(),
-      category: DishCategory.MEAT,
+      category: categories[Math.floor(Math.random() * categories.length)],
       timeCook: faker.number.int({ min: 10, max: 60 }),
       isAvailable: faker.datatype.boolean(),
     }));

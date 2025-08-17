@@ -11,6 +11,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IngredientService } from './ingredient.service';
 import { IngredientDTO } from 'src/dto/creation/ingredient.dto';
 import { Ingredient } from 'src/mongo/models/ingredient.model';
@@ -19,6 +20,7 @@ import { DataType } from 'src/mongo/repositories/base.repository';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
 
 @Controller('ingredients')
+@ApiTags('🥬 Ingredients')
 export class IngredientController {
   constructor(private readonly ingredientService: IngredientService) {}
 
@@ -55,7 +57,7 @@ export class IngredientController {
   @Get(':id')
   @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<Ingredient>> {
+  async findOne(@Param() params: any): Promise<Response<Ingredient>> {
     const response = await this.ingredientService.findOne(params.id);
 
     return { error: '', data: response };

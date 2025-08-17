@@ -9,6 +9,7 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'src/utils/response';
 import { DataType } from 'src/mongo/repositories/base.repository';
 import { StockService } from './stock.service';
@@ -16,6 +17,7 @@ import { Stock } from 'src/mongo/models/stock.model';
 import { StockDTO } from 'src/dto/stock.dto';
 
 @Controller('stocks')
+@ApiTags('📦 Stock')
 export class StockController {
   constructor(private readonly stockService: StockService) {}
 
@@ -37,7 +39,7 @@ export class StockController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<Stock>> {
+  async findOne(@Param() params: any): Promise<Response<Stock>> {
     const response = await this.stockService.findOne(params.id);
 
     return { error: '', data: response };

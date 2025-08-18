@@ -1,0 +1,26 @@
+name: CD - Deploy to Render
+
+on:
+  push:
+    branches: [develop, main]
+  workflow_run:
+    workflows: ["CI - Quality & Build"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+    steps:
+      - uses: JorgeLNJunior/render-deploy@v1.4.5
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          clear_cache: false
+          wait_deploy: true
+          github_deployment: true
+          deployment_environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-name: CD - Deploy to Render
+name: CD - Auto Deploy to Render
 
 on:
   workflow_run:

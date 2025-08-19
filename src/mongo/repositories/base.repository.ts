@@ -14,7 +14,7 @@ class BaseRepository<T extends Document> {
     this.Model = model;
   }
 
-  async insert(data: FilterQuery<T>): Promise<Document<unknown, object, T>> {
+  async insert(data: FilterQuery<T>): Promise<any> {
     try {
       const newObject = new this.Model(data);
       await newObject.validate();

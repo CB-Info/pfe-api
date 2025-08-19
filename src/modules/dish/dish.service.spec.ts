@@ -130,10 +130,7 @@ describe('DishService', () => {
         name: 'Test Ingredient',
       });
 
-      mockDishRepository.insert.mockResolvedValue({
-        _id: 'dish123',
-        toObject: jest.fn().mockReturnValue(createdDish),
-      });
+      mockDishRepository.insert.mockResolvedValue(createdDish);
       mockDishRepository.findOneById.mockResolvedValue(createdDish);
 
       const result = await service.createOne(dishDto);
@@ -184,10 +181,7 @@ describe('DishService', () => {
         ...multiIngredientDto,
         _id: 'dish123',
       };
-      mockDishRepository.insert.mockResolvedValue({
-        _id: 'dish123',
-        toObject: jest.fn().mockReturnValue(createdDish),
-      });
+      mockDishRepository.insert.mockResolvedValue(createdDish);
       mockDishRepository.findOneById.mockResolvedValue(createdDish);
 
       const result = await service.createOne(multiIngredientDto);
@@ -207,10 +201,7 @@ describe('DishService', () => {
       };
 
       const minimalDish = { ...mockDish, ...minimalDishDto };
-      mockDishRepository.insert.mockResolvedValue({
-        ...minimalDish,
-        toObject: jest.fn().mockReturnValue(minimalDish),
-      });
+      mockDishRepository.insert.mockResolvedValue(minimalDish);
 
       const result = await service.createOne(minimalDishDto);
 
@@ -436,8 +427,21 @@ describe('DishService', () => {
         isAvailable: true,
       };
 
-      await expect(service.createOne(dishWithNullIngredients)).rejects.toThrow(
-        'dishData.ingredients is not iterable',
+      const createdDish = {
+        ...mockDish,
+        ...dishWithNullIngredients,
+        ingredients: [],
+      };
+      mockDishRepository.insert.mockResolvedValue(createdDish);
+
+      const result = await service.createOne(dishWithNullIngredients);
+
+      expect(result.ingredients).toEqual([]);
+      expect(repository.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Test Dish',
+          ingredients: [],
+        }),
       );
     });
   });

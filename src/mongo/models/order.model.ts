@@ -3,6 +3,11 @@ import { Document, Types } from 'mongoose';
 import DateBeautifier from '../../utils/date.beautifier';
 
 export enum OrderStatus {
+  PENDING = 'PENDING',
+  IN_PREPARATION = 'IN_PREPARATION',
+  READY = 'READY',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
   FINISH = 'FINISH',
 }
 

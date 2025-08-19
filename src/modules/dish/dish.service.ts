@@ -20,24 +20,28 @@ export class DishService {
 
   async createOne(dishData: DishDTO): Promise<Dish> {
     try {
-      for (const ingredient of dishData.ingredients) {
-        const isExists = await this.ingredientRepository.findOneById(
-          ingredient.ingredientId,
-        );
-
-        if (isExists == null) {
-          throw new BadRequestException(
-            `Ingredient with ID ${ingredient.ingredientId} does not exist.`,
+      // Vérifier que ingredients est un array et qu'il n'est pas null/undefined
+      if (dishData.ingredients && Array.isArray(dishData.ingredients)) {
+        for (const ingredient of dishData.ingredients) {
+          const isExists = await this.ingredientRepository.findOneById(
+            ingredient.ingredientId,
           );
+
+          if (isExists == null) {
+            throw new BadRequestException(
+              `Ingredient with ID ${ingredient.ingredientId} does not exist.`,
+            );
+          }
         }
       }
 
-      const ingredientsWithObjectId = dishData.ingredients.map(
-        (ingredient: DishIngredientDTO) => ({
-          ...ingredient,
-          ingredientId: new Types.ObjectId(ingredient.ingredientId),
-        }),
-      );
+      const ingredientsWithObjectId =
+        dishData.ingredients && Array.isArray(dishData.ingredients)
+          ? dishData.ingredients.map((ingredient: DishIngredientDTO) => ({
+              ...ingredient,
+              ingredientId: new Types.ObjectId(ingredient.ingredientId),
+            }))
+          : [];
 
       const response = await this.dishRepository.insert({
         name: dishData.name,
@@ -49,7 +53,7 @@ export class DishService {
         isAvailable: dishData.isAvailable,
       });
 
-      return response.toObject({ versionKey: false }) as Dish;
+      return response as Dish;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

@@ -29,15 +29,15 @@
 | **Tests E2E** | 19 | 10+ | ✅ Dépassé |
 | **Tests d'intégration** | 12 | 10+ | ✅ Dépassé |
 | **Suites de tests** | 25 | 20+ | ✅ Dépassé |
-| **Couverture lignes** | 78.21% | 80% | 🟡 Proche |
-| **Couverture fonctions** | 82.45% | 85% | 🟡 Proche |
-| **Couverture branches** | 73.12% | 75% | 🟡 Proche |
+| **Couverture lignes** | 71.9% | 80% | 🟡 Proche |
+| **Couverture fonctions** | 57% | 85% | 🟡 Proche |
+| **Couverture branches** | 67.5% | 75% | 🟡 Proche |
 | **Temps d'exécution** | 5.479s | < 6s | ✅ Conforme |
 
 ### 2.2 Évolution des métriques
 | Période | Tests | Couverture | Évolution |
 |---------|-------|------------|-----------|
-| **Août 2025** | 416 | 78.21% | Actuel |
+| **Août 2025** | 416 | 71.9% | Actuel |
 | **Juillet 2025** | 146 | 48.21% | +270 tests |
 | **...** | ... | ... | ... |
 

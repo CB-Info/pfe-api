@@ -14,7 +14,7 @@ class BaseRepository<T extends Document> {
     this.Model = model;
   }
 
-  async insert(data: FilterQuery<T>): Promise<Document<unknown, object, T>> {
+  async insert(data: FilterQuery<T>): Promise<any> {
     try {
       const newObject = new this.Model(data);
       await newObject.validate();
@@ -48,11 +48,10 @@ class BaseRepository<T extends Document> {
   }
 
   async findOneById(_id: string, params?: AdditionalParams): Promise<T | null> {
-    // @ts-expect-error Object with id
-    return this.findOneBy({ _id }, params);
+    return this.findOneBy({ _id } as FilterQuery<T>, params);
   }
 
-  async deleteOnyBy(condition: FilterQuery<T>): Promise<boolean> {
+  async deleteOneBy(condition: FilterQuery<T>): Promise<boolean> {
     try {
       return (await this.Model.deleteOne(condition)).deletedCount > 0;
     } catch {

@@ -9,6 +9,7 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { RestaurantTableService } from './restaurant.table.service';
 import { RestaurantTable } from 'src/mongo/models/restaurant.table.model';
 import { DataType } from 'src/mongo/repositories/base.repository';
@@ -16,6 +17,7 @@ import { Response } from 'src/utils/response';
 import { RestaurantTableDTO } from 'src/dto/restaurant.table.dto';
 
 @Controller('tables')
+@ApiTags('🪑 Tables')
 export class RestaurantTableController {
   constructor(
     private readonly restaurantTableService: RestaurantTableService,
@@ -42,7 +44,7 @@ export class RestaurantTableController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async finOne(@Param() params: any): Promise<Response<RestaurantTable>> {
+  async findOne(@Param() params: any): Promise<Response<RestaurantTable>> {
     const response = await this.restaurantTableService.findOne(params.id);
 
     return { error: '', data: response };

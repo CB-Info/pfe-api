@@ -1,69 +1,433 @@
-name: CI Pipeline
+name: CI - Quality & Build
 
 on:
+  push:
+    branches: [ '**' ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 20
+  CACHE_VERSION: v1
 
 jobs:
-  install_dependencies:
+  typecheck:
+    name: TypeScript Type Check
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Cache node_modules
-        uses: actions/cache@v3
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-  linter:
+      - name: Run TypeScript type check
+        id: typecheck
+        run: |
+          echo "typecheck_start=$(date +%s)" >> $GITHUB_OUTPUT
+          npx tsc --noEmit --skipLibCheck
+          echo "typecheck_end=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Generate summary
+        if: always()
+        run: |
+          start_time=${{ steps.typecheck.outputs.typecheck_start }}
+          end_time=${{ steps.typecheck.outputs.typecheck_end }}
+          duration=$((end_time - start_time))
+
+          echo "## 🔍 TypeScript Type Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ **Status:** PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status:** FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "⏱️ **Duration:** ${duration}s" >> $GITHUB_STEP_SUMMARY
+          echo "🔧 **TypeScript version:** $(npx tsc --version)" >> $GITHUB_STEP_SUMMARY
+
+  lint:
+    name: ESLint Code Quality
     runs-on: ubuntu-latest
-    needs: install_dependencies
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Restore node_modules from cache
-        uses: actions/cache@v3
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
 
-      - name: Lint code
-        run: npm run lint
+      - name: Install dependencies
+        run: npm ci
 
-  tests:
+      - name: Run ESLint
+        id: lint
+        run: |
+          echo "lint_start=$(date +%s)" >> $GITHUB_OUTPUT
+          npm run lint -- --format=json --output-file=lint-results.json || true
+          npm run lint
+          echo "lint_end=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Generate summary
+        if: always()
+        run: |
+          start_time=${{ steps.lint.outputs.lint_start }}
+          end_time=${{ steps.lint.outputs.lint_end }}
+          duration=$((end_time - start_time))
+
+          echo "## 🔧 ESLint Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ **Status:** PASSED - No linting errors" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status:** FAILED - Linting errors found" >> $GITHUB_STEP_SUMMARY
+            if [ -f lint-results.json ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### 📋 Error Summary:" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              node -e "
+                const results = JSON.parse(require('fs').readFileSync('lint-results.json', 'utf8'));
+                const totalErrors = results.reduce((sum, file) => sum + file.errorCount, 0);
+                const totalWarnings = results.reduce((sum, file) => sum + file.warningCount, 0);
+                const filesWithIssues = results.filter(file => file.errorCount > 0 || file.warningCount > 0);
+                console.log(\`Errors: \${totalErrors}, Warnings: \${totalWarnings}\`);
+                console.log(\`Files affected: \${filesWithIssues.length}\`);
+                filesWithIssues.slice(0, 10).forEach(file => {
+                  console.log(\`- \${file.filePath}: \${file.errorCount} errors, \${file.warningCount} warnings\`);
+                });
+              " >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          echo "⏱️ **Duration:** ${duration}s" >> $GITHUB_STEP_SUMMARY
+
+  test:
+    name: Jest Unit Tests & Coverage
     runs-on: ubuntu-latest
-    needs: install_dependencies
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Restore node_modules from cache
-        uses: actions/cache@v3
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
 
-      - name: Run tests
-        run: npm test
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        id: test
+        run: |
+          echo "test_start=$(date +%s)" >> $GITHUB_OUTPUT
+          npm run test:cov -- --json --outputFile=test-results.json --testResultsProcessor=jest-json-reporter || true
+          echo "test_end=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+      - name: Generate summary
+        if: always()
+        run: |
+          start_time=${{ steps.test.outputs.test_start }}
+          end_time=${{ steps.test.outputs.test_end }}
+          duration=$((end_time - start_time))
+
+          echo "## 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f test-results.json ]; then
+            node -e "
+              const results = JSON.parse(require('fs').readFileSync('test-results.json', 'utf8'));
+              const { numTotalTests, numPassedTests, numFailedTests, numPendingTests } = results;
+              console.log(\`✅ **Passed:** \${numPassedTests}\`);
+              console.log(\`❌ **Failed:** \${numFailedTests}\`);
+              console.log(\`⏸️ **Pending:** \${numPendingTests}\`);
+              console.log(\`📊 **Total:** \${numTotalTests}\`);
+            " >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📈 Coverage Summary:" >> $GITHUB_STEP_SUMMARY
+            node -e "
+              const coverage = JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const { lines, statements, functions, branches } = coverage.total;
+              console.log(\`- **Lines:** \${lines.pct}%\`);
+              console.log(\`- **Statements:** \${statements.pct}%\`);
+              console.log(\`- **Functions:** \${functions.pct}%\`);
+              console.log(\`- **Branches:** \${branches.pct}%\`);
+            " >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ **Duration:** ${duration}s" >> $GITHUB_STEP_SUMMARY
+
+  build:
+    name: Build & Bundle Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        id: build
+        run: |
+          echo "build_start=$(date +%s)" >> $GITHUB_OUTPUT
+          npm run build
+          echo "build_end=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Analyze build output
+        id: analyze
+        run: |
+          # Calculate total size
+          total_size=$(du -sb dist/ | cut -f1)
+          echo "total_size=$total_size" >> $GITHUB_OUTPUT
+
+          # Get file breakdown
+          echo "## File breakdown:" > build-analysis.txt
+          find dist/ -type f -name "*.js" -exec du -b {} \; | sort -nr | head -15 >> build-analysis.txt
+
+          # Check for large files
+          large_files=$(find dist/ -type f -size +500k)
+          echo "large_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$large_files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          very_large_files=$(find dist/ -type f -size +1M)
+          echo "very_large_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$very_large_files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate build summary
+        if: always()
+        run: |
+          start_time=${{ steps.build.outputs.build_start }}
+          end_time=${{ steps.build.outputs.build_end }}
+          duration=$((end_time - start_time))
+          total_size=${{ steps.analyze.outputs.total_size }}
+
+          echo "## 🏗️ Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ **Status:** BUILD SUCCESSFUL" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status:** BUILD FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "⏱️ **Duration:** ${duration}s" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Total Size:** $(numfmt --to=iec $total_size)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # File type breakdown
+          echo "### 📊 File Type Breakdown:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "JavaScript files:" >> $GITHUB_STEP_SUMMARY
+          find dist/ -name "*.js" | wc -l | xargs echo "Count:" >> $GITHUB_STEP_SUMMARY
+          find dist/ -name "*.js" -exec du -b {} \; | awk '{sum+=$1} END {print "Size: " sum " bytes"}' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Source maps:" >> $GITHUB_STEP_SUMMARY
+          find dist/ -name "*.map" | wc -l | xargs echo "Count:" >> $GITHUB_STEP_SUMMARY
+          find dist/ -name "*.map" -exec du -b {} \; | awk '{sum+=$1} END {print "Size: " sum " bytes"}' >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          # Top largest files
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Top 10 Largest Files:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find dist/ -type f -exec du -b {} \; | sort -nr | head -10 | while read size file; do
+            echo "$(numfmt --to=iec $size) - $(basename $file)"
+          done >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          # Warnings for large files
+          if [ -n "${{ steps.analyze.outputs.very_large_files }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🚨 Files > 1MB - Optimization Recommended:" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.analyze.outputs.very_large_files }}" | while read file; do
+              if [ -n "$file" ]; then
+                size=$(du -b "$file" | cut -f1)
+                echo "- $(numfmt --to=iec $size) - $file" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**💡 Optimization suggestions:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Consider code splitting for large modules" >> $GITHUB_STEP_SUMMARY
+            echo "- Enable compression in production" >> $GITHUB_STEP_SUMMARY
+            echo "- Review large dependencies and consider alternatives" >> $GITHUB_STEP_SUMMARY
+          elif [ -n "${{ steps.analyze.outputs.large_files }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ⚠️ Files > 500KB:" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.analyze.outputs.large_files }}" | while read file; do
+              if [ -n "$file" ]; then
+                size=$(du -b "$file" | cut -f1)
+                echo "- $(numfmt --to=iec $size) - $file" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          fi
+
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+          retention-days: 7
+
+  env-validation:
+    name: Environment Variables Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run environment validation
+        id: env-validation
+        run: |
+          echo "validation_start=$(date +%s)" >> $GITHUB_OUTPUT
+          npm run validate-env || echo "validation_failed=true" >> $GITHUB_OUTPUT
+          echo "validation_end=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Generate summary
+        if: always()
+        run: |
+          start_time=${{ steps.env-validation.outputs.validation_start }}
+          end_time=${{ steps.env-validation.outputs.validation_end }}
+          duration=$((end_time - start_time))
+
+          echo "## 🔧 Environment Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.env-validation.outputs.validation_failed }}" = "true" ]; then
+            echo "❌ **Status:** VALIDATION FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Missing or Invalid Variables:" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the following required environment variables:" >> $GITHUB_STEP_SUMMARY
+            echo "- MONGO_URL (MongoDB connection string)" >> $GITHUB_STEP_SUMMARY
+            echo "- API_KEY (API authentication key)" >> $GITHUB_STEP_SUMMARY
+            echo "- PORT (optional, defaults to 3000)" >> $GITHUB_STEP_SUMMARY
+            echo "- NODE_ENV (optional, defaults to development)" >> $GITHUB_STEP_SUMMARY
+            echo "- ALLOWED_ORIGINS (optional, for CORS configuration)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Firebase variables (if using Firebase):**" >> $GITHUB_STEP_SUMMARY
+            echo "- FIREBASE_PROJECT_ID" >> $GITHUB_STEP_SUMMARY
+            echo "- FIREBASE_CLIENT_EMAIL" >> $GITHUB_STEP_SUMMARY
+            echo "- FIREBASE_PRIVATE_KEY" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Status:** ALL VARIABLES VALIDATED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ **Duration:** ${duration}s" >> $GITHUB_STEP_SUMMARY
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint, test, build, env-validation]
+    if: always()
+
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "## 🎯 Quality Gate Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| TypeCheck | ${{ needs.typecheck.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${{ needs.test.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Env Validation | ${{ needs.env-validation.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check if any job failed
+          if [[ "${{ needs.typecheck.result }}" != "success" || \
+                "${{ needs.lint.result }}" != "success" || \
+                "${{ needs.test.result }}" != "success" || \
+                "${{ needs.build.result }}" != "success" || \
+                "${{ needs.env-validation.result }}" != "success" ]]; then
+            echo "## 🚨 QUALITY GATE: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ One or more quality checks failed. Please review the failed jobs above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "## ✅ QUALITY GATE: PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🎉 All quality checks passed successfully!" >> $GITHUB_STEP_SUMMARY
+          fi

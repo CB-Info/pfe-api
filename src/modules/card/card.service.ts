@@ -22,7 +22,7 @@ export class CardService {
         isActive: cardData.isActive,
       });
 
-      return response as Card;
+      return response.toObject({ versionKey: false }) as Card;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {
@@ -34,7 +34,9 @@ export class CardService {
 
   async findAll(): Promise<Card[]> {
     try {
-      const response = await this.cardRepository.findAll();
+      const response = await this.cardRepository.findAll({
+        populate: ['dishesId'],
+      });
 
       return response as Card[];
     } catch (e) {
@@ -45,7 +47,10 @@ export class CardService {
 
   async findOne(id: string): Promise<Card> {
     try {
-      const response = await this.cardRepository.findOneBy({ _id: id });
+      const response = await this.cardRepository.findOneBy(
+        { _id: id },
+        { populate: ['dishesId'] },
+      );
 
       if (!response) {
         throw new NotFoundException(`Card with ID ${id} not found`);
@@ -137,7 +142,7 @@ export class CardService {
       return await this.findOne(cardId);
     } catch (e) {
       console.log(e);
-      if (e.message.includes('Unable to remove dish')) {
+      if (e.message.includes('Unable to remove dish from the card')) {
         throw new BadRequestException(e.message);
       }
       throw new InternalServerErrorException(e.message);
@@ -146,7 +151,7 @@ export class CardService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.cardRepository.deleteOnyBy({ _id: id });
+      const isDeleted = await this.cardRepository.deleteOneBy({ _id: id });
 
       if (!isDeleted) {
         throw new NotFoundException(`Card with ID ${id} not found`);

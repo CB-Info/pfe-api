@@ -1,0 +1,542 @@
+name: 'PR Validation - Analysis, Build & Comparison'
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+env:
+  NODE_VERSION: "20"
+  NPM_CONFIG_CACHE: ~/.npm
+  FORCE_COLOR: 2
+  NPM_INSTALL_FLAGS: "--prefer-offline --no-audit --progress=false"
+
+jobs:
+  pr-analysis:
+    name: 'PR Analysis & Thresholds'
+    runs-on: ubuntu-latest
+    outputs:
+      target-branch: ${{ steps.analysis.outputs.target-branch }}
+      file-threshold: ${{ steps.analysis.outputs.file-threshold }}
+      line-threshold: ${{ steps.analysis.outputs.line-threshold }}
+      build-threshold: ${{ steps.analysis.outputs.build-threshold }}
+      changed-files: ${{ steps.analysis.outputs.changed-files }}
+      added-lines: ${{ steps.analysis.outputs.added-lines }}
+      removed-lines: ${{ steps.analysis.outputs.removed-lines }}
+      critical-files-changed: ${{ steps.analysis.outputs.critical-files-changed }}
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 'Analyze PR'
+        id: analysis
+        run: |
+          echo "🔍 **PR Analysis & Threshold Configuration**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Determine target branch and set thresholds
+          TARGET_BRANCH="${{ github.base_ref }}"
+          echo "target-branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+
+          if [[ "$TARGET_BRANCH" == "main" ]]; then
+            FILE_THRESHOLD=30
+            LINE_THRESHOLD=800
+            BUILD_THRESHOLD=300000
+            echo "📋 **Target**: Production merge to \`main\`" >> $GITHUB_STEP_SUMMARY
+          else
+            FILE_THRESHOLD=15
+            LINE_THRESHOLD=400
+            BUILD_THRESHOLD=150000
+            echo "🚀 **Target**: Feature branch merge to \`$TARGET_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "file-threshold=$FILE_THRESHOLD" >> $GITHUB_OUTPUT
+          echo "line-threshold=$LINE_THRESHOLD" >> $GITHUB_OUTPUT
+          echo "build-threshold=$BUILD_THRESHOLD" >> $GITHUB_OUTPUT
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Thresholds Applied:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 📁 **Files**: $FILE_THRESHOLD" >> $GITHUB_STEP_SUMMARY
+          echo "- 📝 **Lines**: $LINE_THRESHOLD" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 **Build Size**: $(numfmt --to=iec $BUILD_THRESHOLD)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Analyze changes between base and head
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          echo "**Change Analysis:**" >> $GITHUB_STEP_SUMMARY
+
+          # Count changed files
+          CHANGED_FILES=$(git diff --name-only $BASE_SHA..$HEAD_SHA | wc -l)
+          echo "changed-files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+
+          # Count added and removed lines
+          DIFF_STATS=$(git diff --numstat $BASE_SHA..$HEAD_SHA | awk '{added+=$1; removed+=$2} END {print added " " removed}')
+          ADDED_LINES=$(echo $DIFF_STATS | cut -d' ' -f1)
+          REMOVED_LINES=$(echo $DIFF_STATS | cut -d' ' -f2)
+
+          # Handle empty values
+          ADDED_LINES=${ADDED_LINES:-0}
+          REMOVED_LINES=${REMOVED_LINES:-0}
+
+          echo "added-lines=$ADDED_LINES" >> $GITHUB_OUTPUT
+          echo "removed-lines=$REMOVED_LINES" >> $GITHUB_OUTPUT
+
+          echo "- 📁 **Files Changed**: $CHANGED_FILES" >> $GITHUB_STEP_SUMMARY
+          echo "- ➕ **Lines Added**: $ADDED_LINES" >> $GITHUB_STEP_SUMMARY
+          echo "- ➖ **Lines Removed**: $REMOVED_LINES" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Analyze file types
+          echo "**📊 File Types Modified:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          git diff --name-only $BASE_SHA..$HEAD_SHA | sed 's/.*\.//' | sort | uniq -c | sort -nr >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check critical files
+          CRITICAL_FILES="package.json package-lock.json nest-cli.json tsconfig.json .github/"
+          CRITICAL_CHANGED=""
+
+          for file in $CRITICAL_FILES; do
+            if git diff --name-only $BASE_SHA..$HEAD_SHA | grep -q "^$file"; then
+              CRITICAL_CHANGED="$CRITICAL_CHANGED $file"
+            fi
+          done
+
+          echo "critical-files-changed=$CRITICAL_CHANGED" >> $GITHUB_OUTPUT
+
+          if [[ -n "$CRITICAL_CHANGED" ]]; then
+            echo "⚠️ **Critical Files Modified:**" >> $GITHUB_STEP_SUMMARY
+            for file in $CRITICAL_CHANGED; do
+              echo "- 🔧 \`$file\`" >> $GITHUB_STEP_SUMMARY
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "💡 **Impact**: These changes may affect build, dependencies, or CI/CD pipeline." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **No critical files modified**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Threshold warnings
+          if [[ $CHANGED_FILES -gt $FILE_THRESHOLD ]]; then
+            echo "⚠️ **File threshold exceeded**: $CHANGED_FILES > $FILE_THRESHOLD" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ $ADDED_LINES -gt $LINE_THRESHOLD ]]; then
+            echo "⚠️ **Line threshold exceeded**: $ADDED_LINES > $LINE_THRESHOLD" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "📋 **Next Steps**: Validating commits, building, and analyzing impact..." >> $GITHUB_STEP_SUMMARY
+
+  conventional-commits:
+    name: 'Conventional Commits Validation'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 'Validate Commit Messages'
+        id: validate-commits
+        run: |
+          echo "📝 **Conventional Commits Validation**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # Conventional commit regex pattern
+          PATTERN="^(feat|fix|docs|style|refactor|test|chore|ci|perf|build|revert)(\(.+\))?: .+"
+
+          VALID_COMMITS=0
+          INVALID_COMMITS=0
+          INVALID_LIST=""
+
+          echo "**Commit Analysis:**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Get all commits in the PR
+          git log --oneline $BASE_SHA..$HEAD_SHA --reverse | while IFS= read -r commit; do
+            COMMIT_HASH=$(echo "$commit" | cut -d' ' -f1)
+            COMMIT_MSG=$(echo "$commit" | cut -d' ' -f2-)
+
+            if echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+              echo "✅ \`$COMMIT_HASH\`: $COMMIT_MSG" >> $GITHUB_STEP_SUMMARY
+              VALID_COMMITS=$((VALID_COMMITS + 1))
+            else
+              echo "❌ \`$COMMIT_HASH\`: $COMMIT_MSG" >> $GITHUB_STEP_SUMMARY
+              INVALID_COMMITS=$((INVALID_COMMITS + 1))
+              INVALID_LIST="$INVALID_LIST$COMMIT_HASH "
+            fi
+          done
+
+          # Count commits (alternative method for totals)
+          TOTAL_COMMITS=$(git log --oneline $BASE_SHA..$HEAD_SHA | wc -l)
+          VALID_COUNT=$(git log --oneline $BASE_SHA..$HEAD_SHA | while read commit; do
+            COMMIT_MSG=$(echo "$commit" | cut -d' ' -f2-)
+            if echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+              echo "1"
+            fi
+          done | wc -l)
+          INVALID_COUNT=$((TOTAL_COMMITS - VALID_COUNT))
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Summary:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Valid**: $VALID_COUNT/$TOTAL_COMMITS" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ **Invalid**: $INVALID_COUNT/$TOTAL_COMMITS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ $INVALID_COUNT -gt 0 ]]; then
+            echo "⚠️ **Invalid commit messages detected!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Expected Format:**" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "type(scope): description" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Types: feat, fix, docs, style, refactor, test, chore, ci, perf, build, revert" >> $GITHUB_STEP_SUMMARY
+            echo "Examples:" >> $GITHUB_STEP_SUMMARY
+            echo "  feat(auth): add JWT token validation" >> $GITHUB_STEP_SUMMARY
+            echo "  fix(api): resolve memory leak in user service" >> $GITHUB_STEP_SUMMARY
+            echo "  docs: update API documentation" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "💡 **Tip**: Use \`git commit --amend\` to fix the last commit message." >> $GITHUB_STEP_SUMMARY
+
+            # Don't fail the job, just warn
+            exit 0
+          else
+            echo "🎉 **All commits follow conventional format!**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  setup-node:
+    name: 'Node.js Environment Setup'
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 'Cache Dependencies'
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.NODE_VERSION }}-
+            ${{ runner.os }}-node-
+
+      - name: 'Install Dependencies'
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci ${{ env.NPM_INSTALL_FLAGS }}
+
+      - name: 'Environment Summary'
+        run: |
+          echo "🔧 **Node.js Environment Setup**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment Details:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🟢 **Node.js**: $(node --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 **npm**: $(npm --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🖥️ **Platform**: $(uname -a)" >> $GITHUB_STEP_SUMMARY
+          echo "- 💾 **Cache**: ${{ steps.cache.outputs.cache-hit == 'true' && 'Hit' || 'Miss' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ steps.cache.outputs.cache-hit }}" == "true" ]]; then
+            echo "⚡ **Performance**: Dependencies restored from cache" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "📥 **Performance**: Dependencies installed fresh" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  build-and-test:
+    name: 'Build, Test & Size Analysis'
+    runs-on: ubuntu-latest
+    needs: setup-node
+    outputs:
+      build-size: ${{ steps.build.outputs.build-size }}
+      test-results: ${{ steps.test.outputs.test-results }}
+      typecheck-status: ${{ steps.typecheck.outputs.status }}
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 'Restore Dependencies'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.NODE_VERSION }}-
+            ${{ runner.os }}-node-
+
+      - name: 'Install Dependencies (if needed)'
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci ${{ env.NPM_INSTALL_FLAGS }}
+          fi
+
+      - name: 'TypeScript Type Check'
+        id: typecheck
+        run: |
+          echo "🔍 **TypeScript Analysis**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          START_TIME=$(date +%s)
+
+          if npx tsc --noEmit; then
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "✅ **Type Check**: PASSED (${DURATION}s)" >> $GITHUB_STEP_SUMMARY
+          else
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "❌ **Type Check**: FAILED (${DURATION}s)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Action Required**: Fix TypeScript errors before merging" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: 'Run Tests'
+        id: test
+        run: |
+          echo "🧪 **Test Execution**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          START_TIME=$(date +%s)
+
+          # Check if coverage script exists
+          if npm run | grep -q "test:cov"; then
+            TEST_COMMAND="npm run test:cov"
+            echo "Running tests with coverage..." >> $GITHUB_STEP_SUMMARY
+          else
+            TEST_COMMAND="npm test"
+            echo "Running standard tests..." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if $TEST_COMMAND -- --passWithNoTests --verbose 2>&1 | tee test_output.txt; then
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+            # Extract test results
+            TEST_RESULTS=$(grep -E "Tests:|test suites" test_output.txt | tail -2 || echo "Tests completed")
+
+            echo "test-results=passed" >> $GITHUB_OUTPUT
+            echo "✅ **Tests**: PASSED (${DURATION}s)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            if [ -n "$TEST_RESULTS" ]; then
+              echo "**Results:**" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              echo "$TEST_RESULTS" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            # Check for coverage
+            if [ -f "coverage/lcov.info" ]; then
+              echo "📊 **Coverage**: Report generated" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+            echo "test-results=failed" >> $GITHUB_OUTPUT
+            echo "❌ **Tests**: FAILED (${DURATION}s)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Action Required**: Fix failing tests before merging" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: 'Build Application'
+        id: build
+        run: |
+          echo "🔨 **Application Build**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          START_TIME=$(date +%s)
+
+          # Clean previous build
+          rm -rf dist/
+
+          if npm run build; then
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+                      # Measure build size (cross-platform compatible)
+          if [ -d "dist" ]; then
+            BUILD_SIZE=$(du -sk dist | cut -f1 | awk '{print $1*1024}')
+              echo "build-size=$BUILD_SIZE" >> $GITHUB_OUTPUT
+
+              # Format size for display
+              BUILD_SIZE_HUMAN=$(numfmt --to=iec $BUILD_SIZE)
+
+              echo "✅ **Build**: SUCCESS (${DURATION}s)" >> $GITHUB_STEP_SUMMARY
+              echo "- 📦 **Size**: $BUILD_SIZE_HUMAN ($BUILD_SIZE bytes)" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+
+              # File breakdown
+              echo "**📁 Build Contents:**" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              find dist -type f -name "*.js" | wc -l | xargs echo "JavaScript files:"
+              find dist -type f -name "*.js.map" | wc -l | xargs echo "Source maps:"
+              find dist -type f -name "*.d.ts" | wc -l | xargs echo "Type definitions:"
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+              # Top 10 largest files
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**📋 Largest Files:**" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              find dist -type f -exec du -h {} + | sort -hr | head -10 >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "build-size=0" >> $GITHUB_OUTPUT
+              echo "❌ **Build**: No dist directory created" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+          else
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+            echo "build-size=0" >> $GITHUB_OUTPUT
+            echo "❌ **Build**: FAILED (${DURATION}s)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Action Required**: Fix build errors before merging" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: 'Upload Build Artifacts'
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dist-pr-${{ github.event.number }}
+          path: dist/
+          retention-days: 7
+
+  build-comparison:
+    name: 'Build Size Comparison'
+    runs-on: ubuntu-latest
+    needs: [pr-analysis, build-and-test]
+    if: success() || failure()
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 'Compare Build Sizes'
+        id: comparison
+        run: |
+          echo "📊 **Build Size Comparison**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          PR_SIZE="${{ needs.build-and-test.outputs.build-size }}"
+          TARGET_BRANCH="${{ needs.pr-analysis.outputs.target-branch }}"
+          BUILD_THRESHOLD="${{ needs.pr-analysis.outputs.build-threshold }}"
+
+          # Determine comparison ref
+          if [[ "$TARGET_BRANCH" == "main" ]]; then
+            # For main, try to use latest tag, fallback to main
+            COMPARISON_REF=$(git ls-remote --tags origin | grep -v '\^{}' | sort -V | tail -1 | cut -f2 | sed 's|refs/tags/||' || echo "main")
+            if [[ -z "$COMPARISON_REF" || "$COMPARISON_REF" == "main" ]]; then
+              COMPARISON_REF="origin/main"
+            else
+              COMPARISON_REF="$COMPARISON_REF"
+            fi
+            echo "🎯 **Comparison Base**: Latest tag or main branch" >> $GITHUB_STEP_SUMMARY
+          else
+            COMPARISON_REF="origin/$TARGET_BRANCH"
+            echo "🎯 **Comparison Base**: $TARGET_BRANCH branch" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "- **Reference**: \`$COMPARISON_REF\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Checkout comparison ref and build
+          git checkout $COMPARISON_REF 2>/dev/null || {
+            echo "⚠️ **Warning**: Could not checkout $COMPARISON_REF, using current HEAD" >> $GITHUB_STEP_SUMMARY
+            COMPARISON_REF="HEAD"
+          }
+
+          # Install dependencies and build base
+          echo "Building base version..." >> $GITHUB_STEP_SUMMARY
+          npm ci ${{ env.NPM_INSTALL_FLAGS }} --silent
+
+          rm -rf dist/
+          if npm run build --silent; then
+            BASE_SIZE=$(du -sk dist | cut -f1 | awk '{print $1*1024}')
+            BASE_SIZE_HUMAN=$(numfmt --to=iec $BASE_SIZE)
+
+            echo "✅ **Base build successful**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Base build failed, using size 0 for comparison**" >> $GITHUB_STEP_SUMMARY
+            BASE_SIZE=0
+            BASE_SIZE_HUMAN="0B"
+          fi
+
+          # Calculate differences
+          if [[ "$PR_SIZE" =~ ^[0-9]+$ ]] && [[ "$BASE_SIZE" =~ ^[0-9]+$ ]]; then
+            DIFF=$((PR_SIZE - BASE_SIZE))
+            PR_SIZE_HUMAN=$(numfmt --to=iec $PR_SIZE)
+
+            if [[ $BASE_SIZE -gt 0 ]]; then
+              DIFF_PERCENT=$(( (DIFF * 100) / BASE_SIZE ))
+            else
+              DIFF_PERCENT=0
+            fi
+
+            echo "**Size Analysis:**" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Base | PR | Difference |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|------|----|-----------:|" >> $GITHUB_STEP_SUMMARY
+            echo "| **Size** | $BASE_SIZE_HUMAN | $PR_SIZE_HUMAN | $(numfmt --to=iec $DIFF) |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Change** | - | - | ${DIFF_PERCENT}% |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Threshold analysis
+            if [[ $PR_SIZE -gt $BUILD_THRESHOLD ]]; then
+              echo "⚠️ **Size Alert**: Build size ($PR_SIZE_HUMAN) exceeds threshold ($(numfmt --to=iec $BUILD_THRESHOLD))" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Optimization Suggestions:**" >> $GITHUB_STEP_SUMMARY
+              echo "- Review bundle analyzer output" >> $GITHUB_STEP_SUMMARY
+              echo "- Consider lazy loading for large modules" >> $GITHUB_STEP_SUMMARY
+              echo "- Check for duplicate dependencies" >> $GITHUB_STEP_SUMMARY
+              echo "- Enable compression in production" >> $GITHUB_STEP_SUMMARY
+            elif [[ $DIFF -lt -10000 ]]; then
+              # Size decreased significantly
+              echo "🎉 **Excellent**: Build size reduced by $(numfmt --to=iec ${DIFF#-})!" >> $GITHUB_STEP_SUMMARY
+            elif [[ $DIFF_PERCENT -lt 5 ]]; then
+              echo "✅ **Good**: Build size change is within acceptable range" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "ℹ️ **Info**: Build size increased by $DIFF_PERCENT%" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ **Error**: Could not compare build sizes (PR: $PR_SIZE, Base: $BASE_SIZE)" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💡 **Tip**: Monitor build size trends to maintain optimal performance" >> $GITHUB_STEP_SUMMARY

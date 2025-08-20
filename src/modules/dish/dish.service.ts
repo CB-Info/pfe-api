@@ -20,24 +20,28 @@ export class DishService {
 
   async createOne(dishData: DishDTO): Promise<Dish> {
     try {
-      for (const ingredient of dishData.ingredients) {
-        const isExists = await this.ingredientRepository.findOneById(
-          ingredient.ingredientId,
-        );
-
-        if (isExists == null) {
-          throw new BadRequestException(
-            `Ingredient with ID ${ingredient.ingredientId} does not exist.`,
+      // Vérifier que ingredients est un array et qu'il n'est pas null/undefined
+      if (dishData.ingredients && Array.isArray(dishData.ingredients)) {
+        for (const ingredient of dishData.ingredients) {
+          const isExists = await this.ingredientRepository.findOneById(
+            ingredient.ingredientId,
           );
+
+          if (isExists == null) {
+            throw new BadRequestException(
+              `Ingredient with ID ${ingredient.ingredientId} does not exist.`,
+            );
+          }
         }
       }
 
-      const ingredientsWithObjectId = dishData.ingredients.map(
-        (ingredient: DishIngredientDTO) => ({
-          ...ingredient,
-          ingredientId: new Types.ObjectId(ingredient.ingredientId),
-        }),
-      );
+      const ingredientsWithObjectId =
+        dishData.ingredients && Array.isArray(dishData.ingredients)
+          ? dishData.ingredients.map((ingredient: DishIngredientDTO) => ({
+              ...ingredient,
+              ingredientId: new Types.ObjectId(ingredient.ingredientId),
+            }))
+          : [];
 
       const response = await this.dishRepository.insert({
         name: dishData.name,
@@ -84,7 +88,7 @@ export class DishService {
       );
 
       if (!response) {
-        throw new NotFoundException(`Card with ID ${id} not found`);
+        throw new NotFoundException(`Dish with ID ${id} not found`);
       }
 
       return response as Dish;
@@ -113,7 +117,7 @@ export class DishService {
       return response as Dish;
     } catch (e) {
       console.log(e);
-      if (e.message == 'CastError') {
+      if (e.name == 'CastError') {
         throw new BadRequestException('Invalid ID format');
       }
       throw new InternalServerErrorException(e.message);
@@ -122,7 +126,7 @@ export class DishService {
 
   async deleteOne(id: string) {
     try {
-      const isDeleted = await this.dishRepository.deleteOnyBy({ _id: id });
+      const isDeleted = await this.dishRepository.deleteOneBy({ _id: id });
 
       if (!isDeleted) {
         throw new NotFoundException(`Dish with ID ${id} not found`);

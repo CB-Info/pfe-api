@@ -27,17 +27,15 @@ L'API Eatopia utilise un système de configuration centralisé basé sur :
 # Format: mongodb://[username:password@]host[:port]/database
 # Exemples:
 MONGO_URL=mongodb://localhost:27017/eatopia-dev          # Local
-MONGO_URL=mongodb+srv://user:pass@cluster.net/eatopia    # Atlas
+MONGO_URL=mongodb+srv://user:pass@cluster.net/eatopia    # Production
 ```
 
 #### **API_KEY**
 ```bash
 # Description: Clé d'authentification API
-# Format: Chaîne de 32 caractères minimum
-# Génération: openssl rand -hex 32
 # Exemples:
-API_KEY=dev-api-key-32-characters-minimum-required-here    # Dev
-API_KEY=prod-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t    # Prod
+API_KEY=dev-api-key    # Dev
+API_KEY=prod-api-key    # Prod
 ```
 
 ### 2.2 Variables optionnelles
@@ -70,7 +68,7 @@ NODE_ENV=test        # Tests automatisés
 # Défaut: http://localhost:3000,http://localhost:5173
 # Exemples:
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173                    # Dev
-ALLOWED_ORIGINS=https://pfe-api-fbyd.onrender.com         # Prod
+ALLOWED_ORIGINS=https://pfe-api-fbyd.onrender.com,https://pfe-web-weld.vercel.app/        # Prod
 ```
 
 ### 2.3 Variables Firebase (conditionnelles)
@@ -131,7 +129,7 @@ MONGO_URL=mongodb+srv://staging-user:password@cluster.net/eatopia-staging
 API_KEY=staging-secure-api-key-32-chars-minimum
 
 # CORS restrictif
-ALLOWED_ORIGINS=https://eatopia-web-staging.onrender.com
+ALLOWED_ORIGINS=https://pfe-api-fbyd-staging.onrender.com,https://pfe-lntyiywla-perso-73694422.vercel.app/
 
 # Monitoring
 LOG_LEVEL=info
@@ -150,7 +148,7 @@ MONGO_URL=mongodb+srv://prod-user:secure-password@cluster.net/eatopia
 API_KEY=production-ultra-secure-api-key-64-characters-minimum
 
 # CORS très restrictif
-ALLOWED_ORIGINS=https://eatopia.com,https://app.eatopia.com
+ALLOWED_ORIGINS=https://pfe-api-fbyd-staging.onrender.com,https://pfe-api-fbyd.onrender.com
 
 # Monitoring production
 LOG_LEVEL=warn

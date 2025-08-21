@@ -168,7 +168,7 @@ npm run load-fixtures      # Données de test
 
 ### Documentation Interactive
 - **[📋 API Swagger](https://pfe-api-fbyd.onrender.com/api)** - Documentation temps réel
-- **[🌐 Frontend React](https://github.com/CB-Info/pfe-web)** - Interface utilisateur
+- **[🌐 Frontend React](https://pfe-web-weld.vercel.app/)** - Interface utilisateur
 
 ### Ressources Externes
 - 🔥 [Firebase Documentation](https://firebase.google.com/docs)

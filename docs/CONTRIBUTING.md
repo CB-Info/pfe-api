@@ -384,7 +384,7 @@ git push origin main --tags
 # GitHub Actions détecte le push sur main
 
 # 5. Validation production
-curl https://eatopia-api.onrender.com/health
+curl https://pfe-api-fbyd.onrender.com/health
 ```
 
 ### 8.3 Communication de release
@@ -614,7 +614,6 @@ code example
 | Colonne 1 | Colonne 2 | Statut |
 |-----------|-----------|---------|
 | Valeur    | Valeur    | ✅      |
-```
 
 ---
 

@@ -10,7 +10,7 @@
 
 **API REST complète** pour la gestion d'un restaurant avec authentification Firebase, système RBAC hiérarchique et architecture NestJS modulaire.
 
-## �� **Démarrage Rapide**
+## 🏁 **Démarrage Rapide**
 
 ```bash
 # 1. Cloner le repository
@@ -37,17 +37,17 @@ npm run start:dev
 
 ### 🏗️ **Architecture & Conception (C2.2.3)**
 - **[🏗️ Architecture](./docs/ARCHITECTURE.md)** - Vue d'ensemble technique et patterns
-- **[�� Sécurité](./docs/SECURITY.md)** - Mesures de sécurisation complètes
+- **[🔒 Sécurité](./docs/SECURITY.md)** - Mesures de sécurisation complètes
 - **[🔐 RBAC](./docs/RBAC.md)** - Contrôle d'accès et matrice des permissions
 - **[🤝 Contribution](./docs/CONTRIBUTING.md)** - Standards et processus de développement
 
 ### 🧪 **Tests & Qualité (C2.2.2)**
-- **[�� Stratégie de Tests](./docs/TEST_STRATEGY.md)** - Pyramide et outils de test
+- **[🧪 Stratégie de Tests](./docs/TEST_STRATEGY.md)** - Pyramide et outils de test
 - **[📊 Résumé des Tests](./docs/TESTS_SUMMARY.md)** - Métriques et couverture (416 tests)
 
 ### ✅ **Validation & Recette (C2.3.x)**
-- **[�� Cahier de Recettes](./docs/RECETTES.md)** - Validation fonctionnelle complète
-- **[�� Plan de Correction](./docs/BUGS.md)** - Suivi des anomalies et qualité
+- **[📒 Cahier de Recettes](./docs/RECETTES.md)** - Validation fonctionnelle complète
+- **[🛠️ Plan de Correction](./docs/BUGS.md)** - Suivi des anomalies et qualité
 
 ### 🚀 **Déploiement & Exploitation (C2.4.1)**
 - **[📦 Déploiement](./docs/DEPLOYMENT.md)** - Procédures de mise en production
@@ -59,13 +59,13 @@ npm run start:dev
 
 ## 🔧 **Fonctionnalités Principales**
 
-- �� **Authentification Firebase** - JWT tokens sécurisés
+- 🔒 **Authentification Firebase** - JWT tokens sécurisés
 - 👥 **RBAC Hiérarchique** - 6 niveaux de rôles (Customer → Admin)
 - 📋 **Gestion des Menus** - Création et organisation des cartes
 - 🍽️ **Catalogue des Plats** - Recettes avec ingrédients et prix
 - 🛒 **Workflow des Commandes** - Suivi complet des statuts
 - 📦 **Gestion des Stocks** - Inventaire et approvisionnements
-- �� **Organisation des Tables** - Réservations et planification
+- 🪑 **Organisation des Tables** - Réservations et planification
 
 ## 🧪 **Tests & Qualité**
 
@@ -133,7 +133,7 @@ npm run load-fixtures      # Données de test
 
 ---
 
-## �� **Système RBAC**
+## 🔐 **Système RBAC**
 
 | Rôle | Permissions | Description |
 |------|-------------|-------------|
@@ -178,7 +178,7 @@ npm run load-fixtures      # Données de test
 
 ---
 
-## �� **Contribution**
+## 🤝 **Contribution**
 
 Nous accueillons les contributions ! Voir **[🤝 Guide de Contribution](./docs/CONTRIBUTING.md)** pour :
 - Standards de code et conventions

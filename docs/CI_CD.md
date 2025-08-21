@@ -116,42 +116,30 @@ quality-gate:
 
 ## 3. Workflow Deploy
 
-### 3.1 Configuration déploiement
-```yaml
-name: Deploy to Render
+### 3.1 Déploiement Render
+#### Variables d'environnement et secrets
+<figure>
+  <a href="https://www.dropbox.com/scl/fi/t93qrdinicouo85ymvzry/secret-env.png?rlkey=ydb5i29ip4nc04mgt0laj8c59&st=xuk0c6a5&dl=0" target="_blank">
+  <img src="https://dl.dropboxusercontent.com/scl/fi/t93qrdinicouo85ymvzry/secret-env.png?rlkey=ydb5i29ip4nc04mgt0laj8c59" alt="Secret & Env" width="400">
+</a>
+  <figcaption>Secret & Env — cliquer pour agrandir</figcaption>
+</figure>
 
-on:
-  workflow_run:
-    workflows: ["CI - Quality & Build"]
-    branches: [develop, main]
-    types: [completed]
+#### Paramètres de déploiement
+<figure>
+  <a href="https://www.dropbox.com/scl/fi/lm8cit5oj30wsgoapw6n4/cd-settings.png?rlkey=ae3f30wn2l9amyjyv5gqhptul&st=ex6cyt41&dl=0" target="_blank">
+  <img src="https://dl.dropboxusercontent.com/scl/fi/lm8cit5oj30wsgoapw6n4/cd-settings.png?rlkey=ae3f30wn2l9amyjyv5gqhptul" alt="CD Settings" width="400">
+</a>
+  <figcaption>CD Settings — cliquer pour agrandir</figcaption>
+</figure>
 
-jobs:
-  deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-```
-
-### 3.2 Déploiement Render
-```yaml
-steps:
-  - uses: JorgeLNJunior/render-deploy@v1.4.5
-    with:
-      service_id: ${{ secrets.RENDER_SERVICE_ID }}
-      api_key: ${{ secrets.RENDER_API_KEY }}
-      clear_cache: true           # Purge cache si nécessaire
-      wait_deploy: true           # Attendre fin déploiement
-      github_deployment: true     # Créer GitHub deployment
-      deployment_environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-      github_token: ${{ secrets.GITHUB_TOKEN }}
-```
-
-### 3.3 Environnements
+### 3.2 Environnements
 | Branche | Environnement | URL | Usage |
 |---------|---------------|-----|-------|
-| `main` | **Production** | `https://eatopia-api.onrender.com` | Utilisateurs finaux |
-| `develop` | **Staging** | `https://eatopia-api-staging.onrender.com` | Tests d'intégration |
+| `main` | **Production** | `https://pfe-api-fbyd.onrender.com` | Utilisateurs finaux |
+| `develop` | **Staging** | `https://pfe-api-fbyd-staging.onrender.com`* | Tests d'intégration |
+
+*L'URL de staging varie car elle est générée automatiquement par Render lors d'une PR sur la branche
 
 ---
 
@@ -197,57 +185,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-```
-
----
-
-## 5. Gestion des secrets
-
-### 5.1 GitHub Secrets
-```bash
-# Configuration dans GitHub Repository Settings > Secrets
-
-# Déploiement
-RENDER_API_KEY=rnd_...           # Clé API Render
-RENDER_SERVICE_ID=srv-...        # ID du service Render
-
-# Base de données
-MONGODB_CONNECTION_STRING=mongodb+srv://...
-
-# Firebase
-FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}
-
-# Monitoring
-CODECOV_TOKEN=...                # Upload couverture
-SNYK_TOKEN=...                   # Scan vulnérabilités
-```
-
-### 5.2 Rotation des secrets
-```bash
-# Procédure de rotation (trimestrielle)
-1. Générer nouveaux secrets
-2. Mettre à jour GitHub Secrets
-3. Mettre à jour variables Render
-4. Tester le déploiement
-5. Révoquer anciens secrets
-6. Documenter la rotation
-```
-
-### 5.3 Sécurisation des workflows
-```yaml
-# Permissions minimales
-permissions:
-  contents: read
-  deployments: write
-  pull-requests: write
-
-# Validation des secrets
-- name: Validate secrets
-  run: |
-    if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
-      echo "❌ RENDER_API_KEY is missing"
-      exit 1
-    fi
 ```
 
 ---

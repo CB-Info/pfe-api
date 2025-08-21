@@ -20,7 +20,7 @@ Ce document constitue le **guide opérationnel** pour l'administration et la mai
 #### **Redémarrage via Render Dashboard**
 ```bash
 1. Se connecter à Render Dashboard
-2. Sélectionner le service "eatopia-api"
+2. Sélectionner le service
 3. Onglet "Settings" > "Manual Deploy"
 4. Cliquer "Deploy latest commit"
 5. Attendre la fin du déploiement (2-3 minutes)
@@ -39,7 +39,7 @@ curl -X POST "https://api.render.com/v1/services/{SERVICE_ID}/deploys" \
 #### **Vérification post-redémarrage**
 ```bash
 # Health check complet
-curl https://eatopia-api.onrender.com/health
+curl https://pfe-api-fbyd.onrender.com/health
 
 # Réponse attendue
 {
@@ -61,17 +61,6 @@ npm run load-fixtures
 # Vérification
 curl http://localhost:3000/dishes | jq length  # Doit retourner 10
 curl http://localhost:3000/ingredients | jq length  # Doit retourner 20
-```
-
-#### **Rechargement en production (à éviter)**
-```bash
-# ⚠️ ATTENTION: Supprime toutes les données existantes
-# Utiliser uniquement en cas d'urgence ou reset complet
-
-# Via script distant (si configuré)
-curl -X POST https://eatopia-api.onrender.com/admin/reset-fixtures \
-  -H "Authorization: Bearer ${ADMIN_TOKEN}" \
-  -H "X-Admin-Secret: ${ADMIN_SECRET}"
 ```
 
 ### 2.3 Rotation des clés API
@@ -105,21 +94,21 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 #### **Health check complet**
 ```bash
 # Endpoint de santé principal
-curl -s https://eatopia-api.onrender.com/health | jq
+curl -s https://pfe-api-fbyd.onrender.com/health | jq
 
 # Vérifications spécifiques
-curl -s https://eatopia-api.onrender.com/health | jq '.dependencies.mongodb'
-curl -s https://eatopia-api.onrender.com/health | jq '.dependencies.firebase'
+curl -s https://pfe-api-fbyd.onrender.com/health | jq '.dependencies.mongodb'
+curl -s https://pfe-api-fbyd.onrender.com/health | jq '.dependencies.firebase'
 ```
 
 #### **Tests de connectivité**
 ```bash
 # Test de la base de données
 curl -H "Authorization: Bearer ${TOKEN}" \
-     https://eatopia-api.onrender.com/users/me
+     https://pfe-api-fbyd.onrender.com/users/me
 
 # Test de Firebase Auth
-curl -X POST https://eatopia-api.onrender.com/users/login \
+curl -X POST https://pfe-api-fbyd.onrender.com/users/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password"}'
 ```
@@ -129,7 +118,7 @@ curl -X POST https://eatopia-api.onrender.com/users/login \
 # Temps de réponse
 curl -w "Total time: %{time_total}s\n" \
      -s -o /dev/null \
-     https://eatopia-api.onrender.com/health
+     https://pfe-api-fbyd.onrender.com/health
 
 # Doit être < 2 secondes
 ```
@@ -139,7 +128,7 @@ curl -w "Total time: %{time_total}s\n" \
 #### **Logs Render**
 ```bash
 # Via Dashboard Render
-1. Service "eatopia-api" > Onglet "Logs"
+1. Service > Onglet "Logs"
 2. Filtrer par niveau: ERROR, WARN, INFO
 3. Rechercher par timestamp ou message
 
@@ -194,7 +183,7 @@ free -m                   # Mémoire disponible
 
 #### **Rollback via Render**
 ```bash
-1. Dashboard Render > Service "eatopia-api"
+1. Dashboard Render > Service
 2. Onglet "Deployments"
 3. Identifier le dernier déploiement stable
 4. Cliquer "Rollback to this deploy"
@@ -269,7 +258,7 @@ NEW_API_KEY=$(openssl rand -hex 32)
 
 # Vérification
 curl -H "X-API-Key: ${NEW_API_KEY}" \
-     https://eatopia-api.onrender.com/health
+     https://pfe-api-fbyd.onrender.com/health
 ```
 
 ---
@@ -311,7 +300,7 @@ curl -H "X-API-Key: ${NEW_API_KEY}" \
 
 #### **Via API (avec token admin existant)**
 ```bash
-curl -X POST https://eatopia-api.onrender.com/users \
+curl -X POST https://pfe-api-fbyd.onrender.com/users \
   -H "Authorization: Bearer ${ADMIN_TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -347,19 +336,19 @@ mongosh "mongodb+srv://..." --eval '
 ### 6.2 Désactivation d'utilisateur
 ```bash
 # Désactivation via API
-curl -X PUT https://eatopia-api.onrender.com/users/{userId}/deactivate \
+curl -X PUT https://pfe-api-fbyd.onrender.com/users/{userId}/deactivate \
   -H "Authorization: Bearer ${ADMIN_TOKEN}"
 
 # Vérification
 curl -H "Authorization: Bearer ${ADMIN_TOKEN}" \
-     https://eatopia-api.onrender.com/users/{userId}
+     https://pfe-api-fbyd.onrender.com/users/{userId}
 # isActive doit être false
 ```
 
 ### 6.3 Changement de rôle d'urgence
 ```bash
 # Promotion temporaire (ex: manager → admin)
-curl -X PUT https://eatopia-api.onrender.com/users/{userId}/role \
+curl -X PUT https://pfe-api-fbyd.onrender.com/users/{userId}/role \
   -H "Authorization: Bearer ${ADMIN_TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{"role": "admin"}'
@@ -400,7 +389,7 @@ mongodump --uri="mongodb+srv://..." \
 ### 7.3 Nettoyage des données
 ```bash
 # Suppression des données de test (production)
-curl -X DELETE https://eatopia-api.onrender.com/admin/cleanup-test-data \
+curl -X DELETE https://pfe-api-fbyd.onrender.com/admin/cleanup-test-data \
   -H "Authorization: Bearer ${ADMIN_TOKEN}" \
   -H "X-Confirm: true"
 
@@ -417,7 +406,7 @@ curl -X DELETE https://eatopia-api.onrender.com/admin/cleanup-test-data \
 #### **Health check détaillé**
 ```bash
 # Vérification complète du système
-curl -s https://eatopia-api.onrender.com/health | jq '{
+curl -s https://pfe-api-fbyd.onrender.com/health | jq '{
   status: .status,
   uptime_hours: (.uptime / 3600 | floor),
   environment: .environment,
@@ -429,7 +418,7 @@ curl -s https://eatopia-api.onrender.com/health | jq '{
 ```bash
 # Statistiques d'utilisation (si endpoint activé)
 curl -H "Authorization: Bearer ${ADMIN_TOKEN}" \
-     https://eatopia-api.onrender.com/admin/metrics
+     https://pfe-api-fbyd.onrender.com/admin/metrics
 
 # Réponse type
 {
@@ -638,13 +627,13 @@ echo "================================="
 # Test de connectivité
 echo "1. Test de connectivité..."
 curl -s -o /dev/null -w "Status: %{http_code}, Time: %{time_total}s\n" \
-     https://eatopia-api.onrender.com/health
+     https://pfe-api-fbyd.onrender.com/health
 
 # Test d'authentification
 echo "2. Test d'authentification..."
 if [ ! -z "$TEST_TOKEN" ]; then
   curl -s -H "Authorization: Bearer $TEST_TOKEN" \
-       https://eatopia-api.onrender.com/users/me | jq '.error'
+       https://pfe-api-fbyd.onrender.com/users/me | jq '.error'
 else
   echo "⚠️ TEST_TOKEN non défini"
 fi
@@ -652,7 +641,7 @@ fi
 # Test base de données
 echo "3. Test base de données..."
 curl -s -H "Authorization: Bearer $TEST_TOKEN" \
-     https://eatopia-api.onrender.com/dishes | jq 'length'
+     https://pfe-api-fbyd.onrender.com/dishes | jq 'length'
 
 echo "✅ Diagnostic terminé"
 ```

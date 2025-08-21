@@ -725,10 +725,3 @@ echo "✅ Maintenance terminée"
 3. Former sur les nouvelles procédures
 4. Tester les procédures modifiées
 ```
-
----
-
-**Document Opérations C2.4.1** - Eatopia API
-*Rédigé le : Août 2025*
-*Version : 1.0*
-*Prochaine mise à jour : Après chaque incident majeur ou changement de procédure*

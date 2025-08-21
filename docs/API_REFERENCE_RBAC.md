@@ -424,8 +424,3 @@ customer, waiter, kitchen_staff, manager, owner, admin
    - Validez les formulaires côté client selon les DTO
    - Respectez les contraintes (longueurs, types, etc.)
    - Gérez les erreurs de validation côté serveur
-
----
-
-*Dernière mise à jour : Août 2025*
-*Version API : 1.0 avec RBAC*

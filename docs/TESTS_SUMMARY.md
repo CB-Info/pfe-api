@@ -385,10 +385,3 @@ cat coverage/coverage-final.json
 # Simulation locale du pipeline
 npm run lint && npm run test:cov && npm run build
 ```
-
----
-
-**Document Résumé Tests C2.2.2/C2.3.2** - Eatopia API
-*Généré le : Août 2025*
-*Commit : Latest*
-*Prochaine mise à jour : Automatique à chaque release*

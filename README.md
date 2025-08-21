@@ -353,8 +353,7 @@ npm run lint:security
 
 ### Repositories liés
 
-- 🌐 **Frontend** : [pfe-web](https://github.com/votre-org/pfe-web) - Interface utilisateur React
-- 📱 **Mobile** : [pfe-mobile](https://github.com/votre-org/pfe-mobile) - Application mobile (si applicable)
+- 🌐 **Frontend** : [pfe-web](https://github.com/CB-Info/pfe-web) - Interface utilisateur React
 
 ### Documentation technique complète
 
@@ -403,8 +402,6 @@ Ce document contient :
 - Actions correctrices appliquées et en cours
 - Métriques de qualité et indicateurs de suivi
 - Méthodologie de gestion des bugs
-
-Le plan de correction est mis à jour en continu dans le cadre de la démarche qualité C2.3.2 (Corriger les anomalies détectées).
 
 ---
 

@@ -274,10 +274,3 @@ HTTP/1.1 403 Forbidden
 curl -H "Authorization: Bearer YOUR_TOKEN" \
      http://localhost:3000/users/permissions/check
 ```
-
----
-
-**Document RBAC C2.2.3** - Eatopia API
-*Rédigé le : Août 2025*
-*Version : 1.0*
-*Prochaine révision : Avant chaque évolution des rôles*

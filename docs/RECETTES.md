@@ -766,8 +766,3 @@ Les tests confirment :
 - **Sécurité applicative** renforcée (RBAC + Firebase)
 - **Robustesse** face aux erreurs et cas limites
 - **Performance** adaptée à un usage professionnel
-
----
-
-**Document de recette C2.3.1** - Eatopia API
-*Rédigé le : Août 2025*

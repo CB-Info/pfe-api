@@ -737,26 +737,7 @@ if (process.env.TRACING_ENABLED === 'true') {
 
 ---
 
-## 15. Documentation de l'architecture
-
-### 15.1 Diagrammes techniques
-Les diagrammes détaillés de l'architecture seront fournis dans le **PDF de soutenance** :
-- **Diagramme de composants** - Modules et leurs interactions
-- **Diagramme de séquence** - Flux d'authentification
-- **Diagramme de déploiement** - Infrastructure cloud
-- **Schéma de base de données** - Relations entre entités
-
-### 15.2 Décisions architecturales
-```markdown
-# Architecture Decision Records (ADR)
-ADR-001: Choix de NestJS vs Express
-ADR-002: MongoDB vs PostgreSQL
-ADR-003: Firebase Auth vs JWT custom
-ADR-004: Render vs AWS vs Heroku
-ADR-005: Mongoose vs Prisma
-```
-
-### 15.3 Évolution prévue
+## 15 Évolution prévue
 ```typescript
 // Roadmap architectural
 Phase 1: API REST monolithique (actuel)
@@ -764,10 +745,3 @@ Phase 2: Microservices (si scaling nécessaire)
 Phase 3: Event-driven architecture (notifications temps réel)
 Phase 4: CQRS + Event Sourcing (audit complet)
 ```
-
----
-
-**Document Architecture C2.2.3** - Eatopia API
-*Rédigé le : Août 2025*
-*Version : 1.0*
-*Prochaine mise à jour : Après évolutions architecturales majeures*

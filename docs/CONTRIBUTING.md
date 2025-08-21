@@ -687,10 +687,3 @@ spike/microservices         # Architecture distribuée
 spike/event-sourcing        # Audit trail complet
 spike/realtime-websockets   # Notifications temps réel
 ```
-
----
-
-**Document Contribution C2.2.3** - Eatopia API
-*Rédigé le : Août 2025*
-*Version : 1.0*
-*Prochaine mise à jour : Après évolution des processus de développement*

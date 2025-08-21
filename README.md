@@ -158,8 +158,8 @@ npm run start:prod
 
 ### Documentation interactive
 
-La documentation complète de l'API est disponible via Swagger à l'adresse :
-`http://localhost:3000/api`
+- **Production (Render)** : https://pfe-api-fbyd.onrender.com/api
+- **Local** : http://localhost:3000/api
 
 ### Endpoints principaux
 

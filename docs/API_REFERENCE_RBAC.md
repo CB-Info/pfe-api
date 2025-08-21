@@ -2,7 +2,7 @@
 
 ## 🔐 Configuration Générale
 
-- **Base URL :** `http://localhost:3000`
+- **Base URL :** `https://pfe-api-fbyd.onrender.com/` en production, `http://localhost:3000` en local
 - **Authorization :** Bearer Token dans le header `Authorization: Bearer YOUR_TOKEN`
 - **Content-Type :** `application/json`
 
@@ -424,8 +424,3 @@ customer, waiter, kitchen_staff, manager, owner, admin
    - Validez les formulaires côté client selon les DTO
    - Respectez les contraintes (longueurs, types, etc.)
    - Gérez les erreurs de validation côté serveur
-
----
-
-*Dernière mise à jour : Août 2025*
-*Version API : 1.0 avec RBAC*

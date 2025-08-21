@@ -104,11 +104,3 @@ Le projet Eatopia présente un **excellent niveau de qualité** avec seulement 5
 🔄 Finalisation de la documentation RBAC
 📈 Amélioration de la couverture de tests vers 80%+
 📊 Surveillance continue des nouvelles anomalies
-
----
-
-**Document maintenu par** : Équipe de développement Eatopia
-**Dernière mise à jour** : Août 2025
-**Prochaine révision** : Fin de sprint en cours
-
-*Ce document fait partie intégrante de la démarche qualité C2.3.2 du projet RNCP Développeur Logiciel.*

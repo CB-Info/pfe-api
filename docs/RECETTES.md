@@ -707,8 +707,8 @@ Authorization: Bearer {token}
 
 ### Références techniques
 - 📋 **[API Reference RBAC](../API_REFERENCE_RBAC.md)** - Documentation complète des endpoints
-- 🔗 **[Documentation Swagger](http://localhost:3000/api)** - Interface interactive pour tests
-- 🧪 **[Tests unitaires](../HARNESS_TESTS_FINAL_SUMMARY.md)** - 416 tests, 78.21% couverture
+- 🔗 **[Documentation Swagger](https://pfe-api-fbyd.onrender.com/api)** - Interface interactive pour tests
+- 🧪 **[Tests unitaires](../HARNESS_TESTS_FINAL_SUMMARY.md)** - 416 tests, 71.9% couverture
 
 ### Versions et environnements
 - **API Version** : 1.0.0

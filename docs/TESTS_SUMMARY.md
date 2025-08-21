@@ -4,7 +4,7 @@
 
 ### État actuel (Août 2025)
 - **✅ 447 tests passent** (416 unitaires + 12 intégration + 19 E2E)
-- **📈 78.21% de couverture globale**
+- **📈 71.9% de couverture globale**
 - **🎯 25 suites de tests complètes**
 - **🚀 Tests E2E et d'intégration implémentés**
 - **⚠️ Tests E2E partiellement fonctionnels** (19/46 passent)
@@ -29,15 +29,15 @@
 | **Tests E2E** | 19 | 10+ | ✅ Dépassé |
 | **Tests d'intégration** | 12 | 10+ | ✅ Dépassé |
 | **Suites de tests** | 25 | 20+ | ✅ Dépassé |
-| **Couverture lignes** | 78.21% | 80% | 🟡 Proche |
-| **Couverture fonctions** | 82.45% | 85% | 🟡 Proche |
-| **Couverture branches** | 73.12% | 75% | 🟡 Proche |
+| **Couverture lignes** | 71.9% | 80% | 🟡 Proche |
+| **Couverture fonctions** | 68.5% | 85% | 🟡 Proche |
+| **Couverture branches** | 57.07% | 75% | 🟡 Proche |
 | **Temps d'exécution** | 5.479s | < 6s | ✅ Conforme |
 
 ### 2.2 Évolution des métriques
 | Période | Tests | Couverture | Évolution |
 |---------|-------|------------|-----------|
-| **Août 2025** | 416 | 78.21% | Actuel |
+| **Août 2025** | 416 | 71.9% | Actuel |
 | **Juillet 2025** | 146 | 48.21% | +270 tests |
 | **...** | ... | ... | ... |
 
@@ -332,28 +332,6 @@ npm run test:integration
 - 🔄 **Refactoring** - Tests avec évolution du code
 - 📚 **Documentation** - Mise à jour des exemples
 - 🎓 **Formation** - Bonnes pratiques équipe
-
----
-
-## 12. Conformité RNCP
-
-### 12.1 Compétences démontrées (C2.2.2)
-- ✅ **Tests unitaires** - 416 tests, 78.21% couverture
-- ✅ **Tests d'intégration** - 12+ tests, services et BDD
-- ✅ **Tests E2E** - 15+ tests, workflows complets
-- ✅ **Stratégie de test** - Pyramide et outils définis
-- ✅ **Automatisation** - CI/CD avec validation
-
-### 12.2 Preuves de qualité (C2.3.2)
-- ✅ **Zéro défaut** - 100% de réussite des tests
-- ✅ **Robustesse** - Gestion complète des erreurs
-- ✅ **Sécurité** - Tests RBAC exhaustifs
-- ✅ **Performance** - Temps d'exécution optimaux
-
-### 12.3 Documentation technique
-- 📋 **Stratégie** - [TEST_STRATEGY.md](./TEST_STRATEGY.md)
-- 🐛 **Anomalies** - [BUGS.md](./BUGS.md)
-- 🧪 **Recettes** - [RECETTES.md](./RECETTES.md)
 
 ---
 

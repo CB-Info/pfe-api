@@ -2,7 +2,7 @@
 
 ## 🔐 Configuration Générale
 
-- **Base URL :** `http://localhost:3000`
+- **Base URL :** `https://pfe-api-fbyd.onrender.com/` en production, `http://localhost:3000` en local
 - **Authorization :** Bearer Token dans le header `Authorization: Bearer YOUR_TOKEN`
 - **Content-Type :** `application/json`
 

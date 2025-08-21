@@ -70,7 +70,7 @@ NODE_ENV=test        # Tests automatisés
 # Défaut: http://localhost:3000,http://localhost:5173
 # Exemples:
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173                    # Dev
-ALLOWED_ORIGINS=https://eatopia.com,https://eatopia-web.onrender.com          # Prod
+ALLOWED_ORIGINS=https://pfe-api-fbyd.onrender.com         # Prod
 ```
 
 ### 2.3 Variables Firebase (conditionnelles)

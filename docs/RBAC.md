@@ -264,7 +264,7 @@ HTTP/1.1 403 Forbidden
 - **Tests** : `src/guards/roles.guard.spec.ts`
 
 ### 8.2 Documentation API
-- **Swagger** : `http://localhost:3000/api`
+- **Swagger** : `https://pfe-api-fbyd.onrender.com/api`
 - **Authentification** : Bearer Token dans header Authorization
 - **Exemple complet** : Voir [API_REFERENCE_RBAC.md](./API_REFERENCE_RBAC.md)
 

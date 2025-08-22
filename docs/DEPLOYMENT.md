@@ -79,25 +79,12 @@ curl http://localhost:3000/health
 ## 3. Déploiement Render (production)
 
 ### 3.1 Configuration Render
-```yaml
-# render.yaml (configuration automatique)
-services:
-  - type: web
-    name: eatopia-api
-    env: node
-    buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: MONGO_URL
-        fromDatabase:
-          name: eatopia-db
-          property: connectionString
-      - key: API_KEY
-        generateValue: true
-        length: 32
-```
+<figure>
+  <a href="https://www.dropbox.com/scl/fi/lm8cit5oj30wsgoapw6n4/cd-settings.png?rlkey=ae3f30wn2l9amyjyv5gqhptul&st=d73ay706&dl=0" target="_blank">
+  <img src="https://dl.dropboxusercontent.com/scl/fi/lm8cit5oj30wsgoapw6n4/cd-settings.png?rlkey=ae3f30wn2l9amyjyv5gqhptul" alt="CD Settings" width="200">
+</a>
+  <figcaption>CD Settings — cliquer pour agrandir</figcaption>
+</figure>
 
 ### 3.2 Variables d'environnement Render
 ```bash
@@ -112,6 +99,13 @@ ALLOWED_ORIGINS=https://eatopia-web.onrender.com,https://eatopia.com
 # Uploader credentials.json via Render Dashboard -> Environment -> Secret Files
 # Path: /etc/secrets/credentials.json
 ```
+
+<figure>
+  <a href="https://www.dropbox.com/scl/fi/t93qrdinicouo85ymvzry/secret-env.png?rlkey=ydb5i29ip4nc04mgt0laj8c59&st=xuk0c6a5&dl=0" target="_blank">
+  <img src="https://dl.dropboxusercontent.com/scl/fi/t93qrdinicouo85ymvzry/secret-env.png?rlkey=ydb5i29ip4nc04mgt0laj8c59" alt="Secret & Env" width="200">
+</a>
+  <figcaption>Secret & Env — cliquer pour agrandir</figcaption>
+</figure>
 
 ### 3.3 Configuration Firebase pour production
 ```bash
@@ -133,12 +127,19 @@ git push origin main  # → Production
 git push origin develop  # → Staging
 
 # Vérification du déploiement
-curl https://eatopia-api.onrender.com/health
-```
+curl https://pfe-api-fbyd.onrender.com/health
 
+```
+#### Status du déploiement
+<figure>
+  <a href="https://www.dropbox.com/scl/fi/g3od269dk78h0210kieru/deploy-status.png?rlkey=4axyd8uxlctdu9puke4yrbvhz&st=bt6jl472&dl=0" target="_blank">
+  <img src="https://dl.dropboxusercontent.com/scl/fi/g3od269dk78h0210kieru/deploy-status.png?rlkey=4axyd8uxlctdu9puke4yrbvhz" alt="Deploy Status" width="400">
+</a>
+  <figcaption>Deploy Status — cliquer pour agrandir</figcaption>
+</figure>
 ---
 
-## 4. Déploiement Docker
+## 4. Déploiement Docker (optionnel)
 
 ### 4.1 Dockerfile
 ```dockerfile
@@ -323,7 +324,6 @@ if (!process.env.API_KEY || process.env.API_KEY.length < 32) {
 - Rotation automatique possible
 
 # GitHub Secrets (CI/CD)
-- RENDER_API_KEY
 - MONGODB_CONNECTION_STRING
 - FIREBASE_SERVICE_ACCOUNT
 ```
@@ -544,10 +544,3 @@ docs: update deployment guide
 - **Architecture** : [ARCHITECTURE.md](./ARCHITECTURE.md)
 - **Opérations** : [OPERATIONS.md](./OPERATIONS.md)
 - **CI/CD** : [CI_CD.md](./CI_CD.md)
-
----
-
-**Document Déploiement C2.4.1** - Eatopia API
-*Rédigé le : Août 2025*
-*Version : 1.0*
-*Prochaine mise à jour : Après chaque évolution infrastructure*

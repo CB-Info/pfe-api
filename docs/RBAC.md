@@ -264,7 +264,7 @@ HTTP/1.1 403 Forbidden
 - **Tests** : `src/guards/roles.guard.spec.ts`
 
 ### 8.2 Documentation API
-- **Swagger** : `http://localhost:3000/api`
+- **Swagger** : `https://pfe-api-fbyd.onrender.com/api`
 - **Authentification** : Bearer Token dans header Authorization
 - **Exemple complet** : Voir [API_REFERENCE_RBAC.md](./API_REFERENCE_RBAC.md)
 
@@ -274,10 +274,3 @@ HTTP/1.1 403 Forbidden
 curl -H "Authorization: Bearer YOUR_TOKEN" \
      http://localhost:3000/users/permissions/check
 ```
-
----
-
-**Document RBAC C2.2.3** - Eatopia API
-*Rédigé le : Août 2025*
-*Version : 1.0*
-*Prochaine révision : Avant chaque évolution des rôles*

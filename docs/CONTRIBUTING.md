@@ -384,7 +384,7 @@ git push origin main --tags
 # GitHub Actions détecte le push sur main
 
 # 5. Validation production
-curl https://eatopia-api.onrender.com/health
+curl https://pfe-api-fbyd.onrender.com/health
 ```
 
 ### 8.3 Communication de release
@@ -614,7 +614,6 @@ code example
 | Colonne 1 | Colonne 2 | Statut |
 |-----------|-----------|---------|
 | Valeur    | Valeur    | ✅      |
-```
 
 ---
 
@@ -687,10 +686,3 @@ spike/microservices         # Architecture distribuée
 spike/event-sourcing        # Audit trail complet
 spike/realtime-websockets   # Notifications temps réel
 ```
-
----
-
-**Document Contribution C2.2.3** - Eatopia API
-*Rédigé le : Août 2025*
-*Version : 1.0*
-*Prochaine mise à jour : Après évolution des processus de développement*

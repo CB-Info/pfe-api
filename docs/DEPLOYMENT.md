@@ -9,7 +9,6 @@
 
 ### Technologies de déploiement
 - **Render** - Plateforme cloud principale (PaaS)
-- **Docker** - Conteneurisation (optionnelle)
 - **GitHub Actions** - CI/CD automatisé
 - **MongoDB Atlas** - Base de données managée
 
@@ -128,8 +127,8 @@ git push origin develop  # → Staging
 
 # Vérification du déploiement
 curl https://pfe-api-fbyd.onrender.com/health
-
 ```
+
 #### Status du déploiement
 <figure>
   <a href="https://www.dropbox.com/scl/fi/g3od269dk78h0210kieru/deploy-status.png?rlkey=4axyd8uxlctdu9puke4yrbvhz&st=bt6jl472&dl=0" target="_blank">
@@ -137,89 +136,12 @@ curl https://pfe-api-fbyd.onrender.com/health
 </a>
   <figcaption>Deploy Status — cliquer pour agrandir</figcaption>
 </figure>
----
-
-## 4. Déploiement Docker (optionnel)
-
-### 4.1 Dockerfile
-```dockerfile
-# Multi-stage build pour optimiser la taille
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
-
-COPY . .
-RUN npm run build
-
-# Production stage
-FROM node:20-alpine AS production
-
-WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
-
-EXPOSE 3000
-USER node
-CMD ["npm", "run", "start:prod"]
-```
-
-### 4.2 Docker Compose (développement)
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  api:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - MONGO_URL=mongodb://mongo:27017/eatopia
-      - API_KEY=dev-api-key-32-characters-minimum
-    depends_on:
-      - mongo
-    volumes:
-      - ./src:/app/src  # Hot reload
-
-  mongo:
-    image: mongo:8
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
-volumes:
-  mongo_data:
-```
-
-### 4.3 Commandes Docker
-```bash
-# Build de l'image
-docker build -t eatopia-api .
-
-# Lancement avec Docker Compose
-docker-compose up -d
-
-# Vérification
-docker-compose ps
-curl http://localhost:3000/health
-
-# Logs
-docker-compose logs -f api
-
-# Arrêt
-docker-compose down
-```
 
 ---
 
-## 5. Configuration des bases de données
+## 4. Configuration des bases de données
 
-### 5.1 MongoDB Atlas (production)
+### 4.1 MongoDB Atlas (production)
 ```bash
 # 1. Créer un cluster MongoDB Atlas
 # 2. Configurer l'accès réseau (IP Render)
@@ -535,7 +457,6 @@ docs: update deployment guide
 
 ### 🔧 Améliorations techniques
 - Migration vers Node.js 20
-- Optimisation des builds Docker
 - Monitoring amélioré
 ```
 

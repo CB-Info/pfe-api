@@ -125,8 +125,7 @@ npm run load-fixtures      # Données de test
 ```
 
 ### Production
-- **Render (Recommandé)** - Déploiement automatique
-- **Docker** - Conteneurisation complète
+- **Render (Utilisé)** - Déploiement automatique
 - **Serveur traditionnel** - Build de production
 
 **Guide complet :** Voir **[📦 Déploiement](./docs/DEPLOYMENT.md)**

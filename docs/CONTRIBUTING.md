@@ -37,7 +37,7 @@ Ce guide définit les **standards de développement** et les **procédures de co
 | **chore** | Maintenance, configuration | `chore(deps): update dependencies to latest` |
 | **perf** | Amélioration de performance | `perf(db): optimize user queries with indexes` |
 | **ci** | Configuration CI/CD | `ci(github): add security audit workflow` |
-| **build** | Build, bundling, packaging | `build(docker): optimize production image size` |
+| **build** | Build, bundling, packaging | `build(image): optimize production image size` |
 
 ### 2.3 Scopes recommandés
 ```bash
@@ -434,7 +434,6 @@ curl https://pfe-api-fbyd.onrender.com/health
   "recommended": [
     "MongoDB Compass",
     "Postman ou Insomnia",
-    "Docker Desktop",
     "GitHub CLI"
   ]
 }

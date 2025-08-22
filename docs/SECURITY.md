@@ -243,7 +243,7 @@ export const configValidationSchema = Joi.object({
 
 ### 7.2 Stockage sécurisé
 - **Fichier .env** - Développement local uniquement
-- **Variables d'environnement** - Production (Render/Docker)
+- **Variables d'environnement** - Production (Render)
 - **Secrets management** - Firebase credentials isolées
 - **Rotation automatique** - API keys renouvelées régulièrement
 

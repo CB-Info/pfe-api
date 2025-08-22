@@ -127,8 +127,8 @@ git push origin develop  # → Staging
 
 # Vérification du déploiement
 curl https://pfe-api-fbyd.onrender.com/health
-
 ```
+
 #### Status du déploiement
 <figure>
   <a href="https://www.dropbox.com/scl/fi/g3od269dk78h0210kieru/deploy-status.png?rlkey=4axyd8uxlctdu9puke4yrbvhz&st=bt6jl472&dl=0" target="_blank">

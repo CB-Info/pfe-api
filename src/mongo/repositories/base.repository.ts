@@ -41,7 +41,11 @@ class BaseRepository<T extends Document> {
         )
         .populate((params?.populate || []).join(' '));
 
-      return finedObject.toObject({ versionKey: false }) || null;
+      if (!finedObject) {
+        return null;
+      }
+
+      return finedObject.toObject({ versionKey: false });
     } catch (e) {
       return null;
     }
@@ -87,6 +91,10 @@ class BaseRepository<T extends Document> {
             .join(' '),
         )
         .populate((params?.populate || []).join(' '));
+
+      if (!finedObject || finedObject.length === 0) {
+        return [];
+      }
 
       return finedObject.map((e) => e.toObject({ versionKey: false }));
     } catch {

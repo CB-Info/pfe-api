@@ -69,7 +69,24 @@ export class DishService {
         populate: ['ingredients.ingredientId'],
       });
 
-      return response as Dish[];
+      // Filtrer les plats qui ont des ingrédients valides
+      const validDishes = response.filter((dish: any) => {
+        if (!dish.ingredients || !Array.isArray(dish.ingredients)) {
+          return false;
+        }
+
+        // Vérifier que tous les ingrédients ont un ingredientId valide
+        // Après populate, ingredientId peut être un objet avec _id ou une chaîne
+        return dish.ingredients.every(
+          (ingredient: any) =>
+            ingredient &&
+            ingredient.ingredientId &&
+            (typeof ingredient.ingredientId === 'string' ||
+              ingredient.ingredientId._id),
+        );
+      });
+
+      return validDishes as Dish[];
     } catch (e) {
       console.log(e);
       throw new InternalServerErrorException(e.message);
@@ -91,11 +108,38 @@ export class DishService {
         throw new NotFoundException(`Dish with ID ${id} not found`);
       }
 
+      // Vérifier que le plat a des ingrédients valides
+      if (!response.ingredients || !Array.isArray(response.ingredients)) {
+        throw new InternalServerErrorException(
+          'Dish has invalid ingredients structure',
+        );
+      }
+
+      // Vérifier que tous les ingrédients ont un ingredientId valide
+      // Après populate, ingredientId peut être un objet avec _id ou une chaîne
+      const hasValidIngredients = response.ingredients.every(
+        (ingredient: any) =>
+          ingredient &&
+          ingredient.ingredientId &&
+          (typeof ingredient.ingredientId === 'string' ||
+            ingredient.ingredientId._id),
+      );
+
+      if (!hasValidIngredients) {
+        throw new InternalServerErrorException('Dish has invalid ingredients');
+      }
+
       return response as Dish;
     } catch (e) {
       console.log(e);
       if (e.name == 'CastError') {
         throw new BadRequestException('Invalid ID format');
+      }
+      if (
+        e instanceof NotFoundException ||
+        e instanceof InternalServerErrorException
+      ) {
+        throw e;
       }
       throw new InternalServerErrorException(e.message);
     }

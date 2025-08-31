@@ -68,12 +68,11 @@ describe('StockService', () => {
   describe('createOne', () => {
     it('should create a stock successfully', async () => {
       const mockCreatedStock = {
-        ...mockStock,
-        toObject: jest.fn().mockReturnValue({
-          _id: '507f1f77bcf86cd799439012',
-          name: mockStockDto.name,
-          ingredients: mockStockDto.ingredients,
-        }),
+        _id: '507f1f77bcf86cd799439012',
+        name: 'Nouveau Stock',
+        ingredients: [mockIngredientItem],
+        dateOfCreation: '2024-01-01',
+        dateLastModified: '2024-01-01',
       };
 
       mockStockRepository.insert.mockResolvedValue(mockCreatedStock);
@@ -84,13 +83,13 @@ describe('StockService', () => {
         name: mockStockDto.name,
         ingredients: mockStockDto.ingredients,
       });
-      expect(mockCreatedStock.toObject).toHaveBeenCalledWith({
-        versionKey: false,
-      });
+      // toObject() is now called in the repository, not in the service
       expect(result).toEqual({
         _id: '507f1f77bcf86cd799439012',
-        name: mockStockDto.name,
-        ingredients: mockStockDto.ingredients,
+        name: 'Nouveau Stock',
+        ingredients: [mockIngredientItem],
+        dateOfCreation: '2024-01-01',
+        dateLastModified: '2024-01-01',
       });
     });
 

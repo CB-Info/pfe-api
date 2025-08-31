@@ -18,6 +18,9 @@ import { Ingredient } from 'src/mongo/models/ingredient.model';
 import { Response } from 'src/utils/response';
 import { DataType } from 'src/mongo/repositories/base.repository';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/guards/roles.decorator';
+import { UserRole } from 'src/mongo/models/user.model';
 
 @Controller('ingredients')
 @ApiTags('🥬 Ingredients')
@@ -25,7 +28,13 @@ export class IngredientController {
   constructor(private readonly ingredientService: IngredientService) {}
 
   @Post()
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.KITCHEN_STAFF,
+    UserRole.MANAGER,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.CREATED)
   async createOne(
@@ -68,7 +77,13 @@ export class IngredientController {
   }
 
   @Put(':id')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.KITCHEN_STAFF,
+    UserRole.MANAGER,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   async updateOne(
@@ -84,7 +99,13 @@ export class IngredientController {
   }
 
   @Delete(':id')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(
+    UserRole.KITCHEN_STAFF,
+    UserRole.MANAGER,
+    UserRole.OWNER,
+    UserRole.ADMIN,
+  )
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOne(@Param() params: any) {

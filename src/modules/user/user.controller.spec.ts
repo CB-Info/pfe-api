@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ForbiddenException } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from 'src/mongo/repositories/user.repository';
@@ -141,44 +142,27 @@ describe('UserController', () => {
     const users = [mockUser];
 
     it('should return all users for management roles', async () => {
-      const adminRequest = { user: { ...mockUser, role: UserRole.ADMIN } };
       mockUserService.canManageUsers.mockReturnValue(true);
       mockUserService.getAllUsers.mockResolvedValue(users);
 
-      const result = await controller.getAllUsers(adminRequest);
+      const result = await controller.getAllUsers();
 
-      expect(service.canManageUsers).toHaveBeenCalledWith(UserRole.ADMIN);
       expect(service.getAllUsers).toHaveBeenCalled();
       expect(result).toEqual({ error: '', data: users });
     });
 
     it('should return users by role when role parameter is provided', async () => {
-      const adminRequest = { user: { ...mockUser, role: UserRole.ADMIN } };
       mockUserService.canManageUsers.mockReturnValue(true);
       mockUserService.getUsersByRole.mockResolvedValue(users);
 
-      const result = await controller.getAllUsers(
-        adminRequest,
-        UserRole.WAITER,
-      );
+      const result = await controller.getAllUsers(UserRole.WAITER);
 
       expect(service.getUsersByRole).toHaveBeenCalledWith(UserRole.WAITER);
       expect(result).toEqual({ error: '', data: users });
     });
 
-    it('should deny access for non-management roles', async () => {
-      const customerRequest = {
-        user: { ...mockUser, role: UserRole.CUSTOMER },
-      };
-      mockUserService.canManageUsers.mockReturnValue(false);
-
-      const result = await controller.getAllUsers(customerRequest);
-
-      expect(result).toEqual({
-        error: 'Insufficient permissions. Only management can view all users.',
-        data: null,
-      });
-    });
+    // Note: Access control for non-management roles is now handled by RolesGuard at the Guard level
+    // instead of in the controller logic, so this test is no longer applicable at the controller level.
   });
 
   describe('getUserById', () => {
@@ -209,12 +193,9 @@ describe('UserController', () => {
       const userRequest = { user: { ...mockUser, _id: 'user456' } };
       mockUserService.canManageUsers.mockReturnValue(false);
 
-      const result = await controller.getUserById(userRequest, 'user123');
-
-      expect(result).toEqual({
-        error: 'Insufficient permissions. You can only view your own profile.',
-        data: null,
-      });
+      await expect(
+        controller.getUserById(userRequest, 'user123'),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -272,17 +253,9 @@ describe('UserController', () => {
       const userRequest = { user: { ...mockUser, _id: 'user456' } };
       mockUserService.canManageUsers.mockReturnValue(false);
 
-      const result = await controller.updateUser(
-        updateDto,
-        'user123',
-        userRequest,
-      );
-
-      expect(result).toEqual({
-        error:
-          'Insufficient permissions. You can only update your own profile.',
-        data: null,
-      });
+      await expect(
+        controller.updateUser(updateDto, 'user123', userRequest),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -338,18 +311,14 @@ describe('UserController', () => {
 
   describe('deactivateUser', () => {
     it('should deactivate user successfully for management', async () => {
-      const adminRequest = {
-        user: { ...mockUser, _id: 'admin123', role: UserRole.ADMIN },
-      };
       mockUserService.canManageUsers.mockReturnValue(true);
       mockUserService.deactivateUser.mockResolvedValue({
         ...mockUser,
         isActive: false,
       });
 
-      const result = await controller.deactivateUser('user123', adminRequest);
+      const result = await controller.deactivateUser('user123');
 
-      expect(service.canManageUsers).toHaveBeenCalledWith(UserRole.ADMIN);
       expect(service.deactivateUser).toHaveBeenCalledWith('user123');
       expect(result).toEqual({
         error: '',
@@ -357,39 +326,19 @@ describe('UserController', () => {
       });
     });
 
-    it('should deny access for non-management roles', async () => {
-      const customerRequest = {
-        user: { ...mockUser, role: UserRole.CUSTOMER },
-      };
-      mockUserService.canManageUsers.mockReturnValue(false);
-
-      const result = await controller.deactivateUser(
-        'user123',
-        customerRequest,
-      );
-
-      expect(result).toEqual({
-        error:
-          'Insufficient permissions. Only management can deactivate users.',
-        data: null,
-      });
-    });
+    // Note: Access control for non-management roles is now handled by RolesGuard at the Guard level.
   });
 
   describe('activateUser', () => {
     it('should activate user successfully for management', async () => {
-      const adminRequest = {
-        user: { ...mockUser, _id: 'admin123', role: UserRole.ADMIN },
-      };
       mockUserService.canManageUsers.mockReturnValue(true);
       mockUserService.activateUser.mockResolvedValue({
         ...mockUser,
         isActive: true,
       });
 
-      const result = await controller.activateUser('user123', adminRequest);
+      const result = await controller.activateUser('user123');
 
-      expect(service.canManageUsers).toHaveBeenCalledWith(UserRole.ADMIN);
       expect(service.activateUser).toHaveBeenCalledWith('user123');
       expect(result).toEqual({
         error: '',
@@ -397,19 +346,7 @@ describe('UserController', () => {
       });
     });
 
-    it('should deny access for non-management roles', async () => {
-      const customerRequest = {
-        user: { ...mockUser, role: UserRole.CUSTOMER },
-      };
-      mockUserService.canManageUsers.mockReturnValue(false);
-
-      const result = await controller.activateUser('user123', customerRequest);
-
-      expect(result).toEqual({
-        error: 'Insufficient permissions. Only management can activate users.',
-        data: null,
-      });
-    });
+    // Note: Access control for non-management roles is now handled by RolesGuard at the Guard level.
   });
 
   describe('checkPermissions', () => {

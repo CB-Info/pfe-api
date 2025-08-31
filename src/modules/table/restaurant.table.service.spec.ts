@@ -58,12 +58,8 @@ describe('RestaurantTableService', () => {
   describe('createOne', () => {
     it('should create a table successfully', async () => {
       const mockCreatedTable = {
-        ...mockTable,
-        number: mockTableDto.number,
-        toObject: jest.fn().mockReturnValue({
-          _id: '507f1f77bcf86cd799439011',
-          number: mockTableDto.number,
-        }),
+        _id: '507f1f77bcf86cd799439011',
+        number: 2,
       };
 
       mockTableRepository.insert.mockResolvedValue(mockCreatedTable);
@@ -73,12 +69,10 @@ describe('RestaurantTableService', () => {
       expect(repository.insert).toHaveBeenCalledWith({
         number: mockTableDto.number,
       });
-      expect(mockCreatedTable.toObject).toHaveBeenCalledWith({
-        versionKey: false,
-      });
+      // toObject() is now called in the repository, not in the service
       expect(result).toEqual({
         _id: '507f1f77bcf86cd799439011',
-        number: mockTableDto.number,
+        number: 2,
       });
     });
 

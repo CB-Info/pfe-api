@@ -12,9 +12,12 @@ import {
   Req,
   UseGuards,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { FirebaseTokenGuard } from 'src/guards/firebase-token.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/guards/roles.decorator';
 import {
   ApiSecurity,
   ApiTags,
@@ -148,7 +151,8 @@ export class UserController {
   }
 
   @Get('')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(UserRole.MANAGER, UserRole.OWNER, UserRole.ADMIN)
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -158,16 +162,13 @@ export class UserController {
     status: 200,
     description: 'List of all users.',
   })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Insufficient permissions. Only management can view all users.',
+  })
   @ApiQuery({ name: 'role', enum: UserRole, required: false })
-  async getAllUsers(@Req() request, @Query('role') role?: UserRole) {
-    // Check if user has permission to manage users
-    if (!this.userService.canManageUsers(request.user.role)) {
-      return {
-        error: 'Insufficient permissions. Only management can view all users.',
-        data: null,
-      };
-    }
-
+  async getAllUsers(@Query('role') role?: UserRole) {
     const response = role
       ? await this.userService.getUsersByRole(role)
       : await this.userService.getAllUsers();
@@ -184,6 +185,11 @@ export class UserController {
     status: 200,
     description: 'User information.',
   })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Insufficient permissions. You can only view your own profile.',
+  })
   @ApiParam({ name: 'userId', description: 'The ID of the user to get' })
   async getUserById(@Req() request, @Param('userId') userId: string) {
     // Users can view their own profile or management can view any profile
@@ -191,10 +197,9 @@ export class UserController {
       request.user._id !== userId &&
       !this.userService.canManageUsers(request.user.role)
     ) {
-      return {
-        error: 'Insufficient permissions. You can only view your own profile.',
-        data: null,
-      };
+      throw new ForbiddenException(
+        'Insufficient permissions. You can only view your own profile.',
+      );
     }
 
     const response = await this.userService.getUserById(userId);
@@ -211,6 +216,11 @@ export class UserController {
     description: 'The user has been successfully updated.',
     type: UserUpdateDTO,
   })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Insufficient permissions. You can only update your own profile.',
+  })
   @ApiBody({ type: UserUpdateDTO })
   @ApiParam({ name: 'userId', description: 'The ID of the user to update' })
   async updateUser(
@@ -223,11 +233,9 @@ export class UserController {
       request.user._id !== userId &&
       !this.userService.canManageUsers(request.user.role)
     ) {
-      return {
-        error:
-          'Insufficient permissions. You can only update your own profile.',
-        data: null,
-      };
+      throw new ForbiddenException(
+        'Insufficient permissions. You can only update your own profile.',
+      );
     }
 
     const response = await this.userService.updateUser(userId, body);
@@ -298,7 +306,8 @@ export class UserController {
   }
 
   @Put(':userId/deactivate')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(UserRole.MANAGER, UserRole.OWNER, UserRole.ADMIN)
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -310,23 +319,20 @@ export class UserController {
     status: 200,
     description: 'User has been successfully deactivated.',
   })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Insufficient permissions. Only management can deactivate users.',
+  })
   @ApiParam({ name: 'userId', description: 'The ID of the user to deactivate' })
-  async deactivateUser(@Param('userId') userId: string, @Req() request) {
-    // Check permissions using the service method
-    if (!this.userService.canManageUsers(request.user.role)) {
-      return {
-        error:
-          'Insufficient permissions. Only management can deactivate users.',
-        data: null,
-      };
-    }
-
+  async deactivateUser(@Param('userId') userId: string) {
     const response = await this.userService.deactivateUser(userId);
     return { error: '', data: response };
   }
 
   @Put(':userId/activate')
-  @UseGuards(FirebaseTokenGuard)
+  @UseGuards(FirebaseTokenGuard, RolesGuard)
+  @Roles(UserRole.MANAGER, UserRole.OWNER, UserRole.ADMIN)
   @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -338,16 +344,13 @@ export class UserController {
     status: 200,
     description: 'User has been successfully activated.',
   })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Insufficient permissions. Only management can activate users.',
+  })
   @ApiParam({ name: 'userId', description: 'The ID of the user to activate' })
-  async activateUser(@Param('userId') userId: string, @Req() request) {
-    // Check permissions using the service method
-    if (!this.userService.canManageUsers(request.user.role)) {
-      return {
-        error: 'Insufficient permissions. Only management can activate users.',
-        data: null,
-      };
-    }
-
+  async activateUser(@Param('userId') userId: string) {
     const response = await this.userService.activateUser(userId);
     return { error: '', data: response };
   }

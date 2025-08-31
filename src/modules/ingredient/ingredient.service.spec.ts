@@ -98,10 +98,6 @@ describe('IngredientService', () => {
       const mockCreatedIngredient = {
         _id: 'new-ingredient123',
         name: mockIngredientDto.name,
-        toObject: jest.fn().mockReturnValue({
-          _id: 'new-ingredient123',
-          name: mockIngredientDto.name,
-        }),
       };
 
       mockIngredientRepository.insert.mockResolvedValue(mockCreatedIngredient);
@@ -111,9 +107,7 @@ describe('IngredientService', () => {
       expect(repository.insert).toHaveBeenCalledWith({
         name: mockIngredientDto.name,
       });
-      expect(mockCreatedIngredient.toObject).toHaveBeenCalledWith({
-        versionKey: false,
-      });
+      // toObject() is now called in the repository, not in the service
       expect(result).toEqual({
         _id: 'new-ingredient123',
         name: mockIngredientDto.name,

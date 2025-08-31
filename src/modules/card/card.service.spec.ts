@@ -65,13 +65,12 @@ describe('CardService', () => {
   describe('createOne', () => {
     it('should create a card successfully', async () => {
       const mockCreatedCard = {
-        ...mockCard,
-        toObject: jest.fn().mockReturnValue({
-          _id: 'card123',
-          name: mockCardDto.name,
-          dishesId: mockCardDto.dishesId,
-          isActive: mockCardDto.isActive,
-        }),
+        _id: '507f1f77bcf86cd799439011',
+        name: 'Menu Principal',
+        dishesId: ['507f1f77bcf86cd799439012', '507f1f77bcf86cd799439013'],
+        isActive: true,
+        dateOfCreation: '2024-01-01',
+        dateLastModified: '2024-01-01',
       };
 
       mockCardRepository.insert.mockResolvedValue(mockCreatedCard);
@@ -83,14 +82,14 @@ describe('CardService', () => {
         dishesId: mockCardDto.dishesId,
         isActive: mockCardDto.isActive,
       });
-      expect(mockCreatedCard.toObject).toHaveBeenCalledWith({
-        versionKey: false,
-      });
+      // toObject() is now called in the repository, not in the service
       expect(result).toEqual({
-        _id: 'card123',
-        name: mockCardDto.name,
-        dishesId: mockCardDto.dishesId,
-        isActive: mockCardDto.isActive,
+        _id: '507f1f77bcf86cd799439011',
+        name: 'Menu Principal',
+        dishesId: ['507f1f77bcf86cd799439012', '507f1f77bcf86cd799439013'],
+        isActive: true,
+        dateOfCreation: '2024-01-01',
+        dateLastModified: '2024-01-01',
       });
     });
 

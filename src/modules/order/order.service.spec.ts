@@ -72,15 +72,14 @@ describe('OrderService', () => {
   describe('createOne', () => {
     it('should create an order successfully', async () => {
       const mockCreatedOrder = {
-        ...mockOrder,
-        toObject: jest.fn().mockReturnValue({
-          _id: '507f1f77bcf86cd799439012',
-          tableNumberId: mockOrderDto.tableNumberId,
-          dishes: mockOrderDto.dishes,
-          status: mockOrderDto.status,
-          totalPrice: mockOrderDto.totalPrice,
-          tips: mockOrderDto.tips,
-        }),
+        _id: '507f1f77bcf86cd799439012',
+        tableNumberId: '507f1f77bcf86cd799439013',
+        dishes: [mockDishOrder],
+        status: OrderStatus.FINISH,
+        totalPrice: 31.0,
+        tips: 3.1,
+        dateOfCreation: '2024-01-01',
+        dateLastModified: '2024-01-01',
       };
 
       mockOrderRepository.insert.mockResolvedValue(mockCreatedOrder);
@@ -94,16 +93,16 @@ describe('OrderService', () => {
         totalPrice: mockOrderDto.totalPrice,
         tips: mockOrderDto.tips,
       });
-      expect(mockCreatedOrder.toObject).toHaveBeenCalledWith({
-        versionKey: false,
-      });
+      // toObject() is now called in the repository, not in the service
       expect(result).toEqual({
         _id: '507f1f77bcf86cd799439012',
-        tableNumberId: mockOrderDto.tableNumberId,
-        dishes: mockOrderDto.dishes,
-        status: mockOrderDto.status,
-        totalPrice: mockOrderDto.totalPrice,
-        tips: mockOrderDto.tips,
+        tableNumberId: '507f1f77bcf86cd799439013',
+        dishes: [mockDishOrder],
+        status: OrderStatus.FINISH,
+        totalPrice: 31.0,
+        tips: 3.1,
+        dateOfCreation: '2024-01-01',
+        dateLastModified: '2024-01-01',
       });
     });
 

@@ -24,7 +24,11 @@ export class IngredientService {
         name: ingredientData.name,
       });
 
-      return response.toObject({ versionKey: false }) as Ingredient;
+      if (!response) {
+        throw new InternalServerErrorException('Failed to create ingredient');
+      }
+
+      return response as Ingredient;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

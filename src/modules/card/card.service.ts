@@ -22,7 +22,7 @@ export class CardService {
         isActive: cardData.isActive,
       });
 
-      return response.toObject({ versionKey: false }) as Card;
+      return response as Card;
     } catch (e) {
       console.log(e);
       if (e.name === 'ValidationError') {

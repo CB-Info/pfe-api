@@ -48,6 +48,10 @@ Cette API permet la gestion complète d'un restaurant avec les fonctionnalités 
   .addTag('📋 Cards', 'Gestion des cartes/menus du restaurant')
   .addTag('📦 Stock', 'Gestion des stocks et inventaires')
   .addTag('🪑 Tables', 'Gestion des tables et réservations')
+  .addTag(
+    '📊 Dashboard',
+    'Tableau de bord unifié avec données filtrées par rôle RBAC',
+  )
   .addBearerAuth(
     {
       type: 'http',

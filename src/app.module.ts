@@ -13,6 +13,7 @@ import { OrderModule } from './modules/order/order.module';
 import { StockModule } from './modules/stock/stock.module';
 import { RestaurantTableModule } from './modules/table/restaurant.table.module';
 import { UserModule } from './modules/user/user.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { UserModule } from './modules/user/user.module';
     StockModule,
     RestaurantTableModule,
     UserModule,
+    DashboardModule,
   ],
   providers: [
     {

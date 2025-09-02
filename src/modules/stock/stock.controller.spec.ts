@@ -150,9 +150,7 @@ describe('StockController', () => {
     it('should return a single stock by ID', async () => {
       mockStockService.findOne.mockResolvedValue(mockStock);
 
-      const result = await controller.findOne({
-        id: '507f1f77bcf86cd799439012',
-      });
+      const result = await controller.findOne('507f1f77bcf86cd799439012');
 
       expect(service.findOne).toHaveBeenCalledWith('507f1f77bcf86cd799439012');
       expect(result).toEqual({
@@ -164,7 +162,7 @@ describe('StockController', () => {
     it('should handle stock not found', async () => {
       mockStockService.findOne.mockRejectedValue(new Error('Stock not found'));
 
-      await expect(controller.findOne({ id: 'nonexistent' })).rejects.toThrow(
+      await expect(controller.findOne('nonexistent')).rejects.toThrow(
         'Stock not found',
       );
     });
@@ -174,7 +172,7 @@ describe('StockController', () => {
         new Error('Invalid ID format'),
       );
 
-      await expect(controller.findOne({ id: 'invalid' })).rejects.toThrow(
+      await expect(controller.findOne('invalid')).rejects.toThrow(
         'Invalid ID format',
       );
     });
@@ -187,7 +185,7 @@ describe('StockController', () => {
       mockStockService.updateOne.mockResolvedValue(updatedStock);
 
       const result = await controller.updateOne(
-        { id: '507f1f77bcf86cd799439012' },
+        '507f1f77bcf86cd799439012',
         updateData,
       );
 
@@ -214,7 +212,7 @@ describe('StockController', () => {
       mockStockService.updateOne.mockResolvedValue(updatedStock);
 
       const result = await controller.updateOne(
-        { id: '507f1f77bcf86cd799439012' },
+        '507f1f77bcf86cd799439012',
         partialUpdate,
       );
 
@@ -233,7 +231,7 @@ describe('StockController', () => {
       mockStockService.updateOne.mockRejectedValue(new Error('Update failed'));
 
       await expect(
-        controller.updateOne({ id: '507f1f77bcf86cd799439012' }, updateData),
+        controller.updateOne('507f1f77bcf86cd799439012', updateData),
       ).rejects.toThrow('Update failed');
     });
 
@@ -244,7 +242,7 @@ describe('StockController', () => {
       );
 
       await expect(
-        controller.updateOne({ id: 'nonexistent' }, updateData),
+        controller.updateOne('nonexistent', updateData),
       ).rejects.toThrow('Stock with ID nonexistent not found');
     });
   });
@@ -254,7 +252,7 @@ describe('StockController', () => {
       mockStockService.deleteOne.mockResolvedValue(undefined);
 
       await expect(
-        controller.deleteOne({ id: '507f1f77bcf86cd799439012' }),
+        controller.deleteOne('507f1f77bcf86cd799439012'),
       ).resolves.toBeUndefined();
 
       expect(service.deleteOne).toHaveBeenCalledWith(
@@ -268,7 +266,7 @@ describe('StockController', () => {
       );
 
       await expect(
-        controller.deleteOne({ id: '507f1f77bcf86cd799439012' }),
+        controller.deleteOne('507f1f77bcf86cd799439012'),
       ).rejects.toThrow('Deletion failed');
     });
 
@@ -277,7 +275,7 @@ describe('StockController', () => {
         new Error('Stock with ID nonexistent not found'),
       );
 
-      await expect(controller.deleteOne({ id: 'nonexistent' })).rejects.toThrow(
+      await expect(controller.deleteOne('nonexistent')).rejects.toThrow(
         'Stock with ID nonexistent not found',
       );
     });
@@ -287,7 +285,7 @@ describe('StockController', () => {
         new Error('Invalid ID format'),
       );
 
-      await expect(controller.deleteOne({ id: 'invalid-id' })).rejects.toThrow(
+      await expect(controller.deleteOne('invalid-id')).rejects.toThrow(
         'Invalid ID format',
       );
     });
@@ -298,7 +296,7 @@ describe('StockController', () => {
       );
 
       await expect(
-        controller.deleteOne({ id: '507f1f77bcf86cd799439012' }),
+        controller.deleteOne('507f1f77bcf86cd799439012'),
       ).rejects.toThrow('Database connection failed');
     });
   });

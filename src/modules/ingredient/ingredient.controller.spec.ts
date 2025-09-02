@@ -175,7 +175,7 @@ describe('IngredientController', () => {
     it('should return a single ingredient by ID', async () => {
       mockIngredientService.findOne.mockResolvedValue(mockIngredient);
 
-      const result = await controller.findOne({ id: 'ingredient123' });
+      const result = await controller.findOne('ingredient123');
 
       expect(service.findOne).toHaveBeenCalledWith('ingredient123');
       expect(result).toEqual({
@@ -189,7 +189,7 @@ describe('IngredientController', () => {
         new Error('Ingredient not found'),
       );
 
-      await expect(controller.findOne({ id: 'nonexistent' })).rejects.toThrow(
+      await expect(controller.findOne('nonexistent')).rejects.toThrow(
         'Ingredient not found',
       );
     });
@@ -199,7 +199,7 @@ describe('IngredientController', () => {
         new Error('Invalid ID format'),
       );
 
-      await expect(controller.findOne({ id: 'invalid' })).rejects.toThrow(
+      await expect(controller.findOne('invalid')).rejects.toThrow(
         'Invalid ID format',
       );
     });
@@ -211,10 +211,7 @@ describe('IngredientController', () => {
       const updatedIngredient = { ...mockIngredient, ...updateData };
       mockIngredientService.updateOne.mockResolvedValue(updatedIngredient);
 
-      const result = await controller.updateOne(
-        { id: 'ingredient123' },
-        updateData,
-      );
+      const result = await controller.updateOne('ingredient123', updateData);
 
       expect(service.updateOne).toHaveBeenCalledWith(
         'ingredient123',
@@ -231,10 +228,7 @@ describe('IngredientController', () => {
       const updatedIngredient = { ...mockIngredient, ...partialUpdate };
       mockIngredientService.updateOne.mockResolvedValue(updatedIngredient);
 
-      const result = await controller.updateOne(
-        { id: 'ingredient123' },
-        partialUpdate,
-      );
+      const result = await controller.updateOne('ingredient123', partialUpdate);
 
       expect(service.updateOne).toHaveBeenCalledWith(
         'ingredient123',
@@ -253,7 +247,7 @@ describe('IngredientController', () => {
       );
 
       await expect(
-        controller.updateOne({ id: 'ingredient123' }, updateData),
+        controller.updateOne('ingredient123', updateData),
       ).rejects.toThrow('Update failed');
     });
 
@@ -264,7 +258,7 @@ describe('IngredientController', () => {
       );
 
       await expect(
-        controller.updateOne({ id: 'nonexistent' }, updateData),
+        controller.updateOne('nonexistent', updateData),
       ).rejects.toThrow('Ingredient with ID nonexistent not found');
     });
   });
@@ -274,7 +268,7 @@ describe('IngredientController', () => {
       mockIngredientService.deleteOne.mockResolvedValue(undefined);
 
       await expect(
-        controller.deleteOne({ id: 'ingredient123' }),
+        controller.deleteOne('ingredient123'),
       ).resolves.toBeUndefined();
 
       expect(service.deleteOne).toHaveBeenCalledWith('ingredient123');
@@ -285,9 +279,9 @@ describe('IngredientController', () => {
         new Error('Deletion failed'),
       );
 
-      await expect(
-        controller.deleteOne({ id: 'ingredient123' }),
-      ).rejects.toThrow('Deletion failed');
+      await expect(controller.deleteOne('ingredient123')).rejects.toThrow(
+        'Deletion failed',
+      );
     });
 
     it('should handle ingredient not found during deletion', async () => {
@@ -295,7 +289,7 @@ describe('IngredientController', () => {
         new Error('Ingredient with ID nonexistent not found'),
       );
 
-      await expect(controller.deleteOne({ id: 'nonexistent' })).rejects.toThrow(
+      await expect(controller.deleteOne('nonexistent')).rejects.toThrow(
         'Ingredient with ID nonexistent not found',
       );
     });
@@ -305,7 +299,7 @@ describe('IngredientController', () => {
         new Error('Invalid ID format'),
       );
 
-      await expect(controller.deleteOne({ id: 'invalid-id' })).rejects.toThrow(
+      await expect(controller.deleteOne('invalid-id')).rejects.toThrow(
         'Invalid ID format',
       );
     });

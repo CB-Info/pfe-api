@@ -144,7 +144,7 @@ describe('CardController', () => {
     it('should return a single card by ID', async () => {
       mockCardService.findOne.mockResolvedValue(mockCard);
 
-      const result = await controller.findOne({ id: 'card123' });
+      const result = await controller.findOne('card123');
 
       expect(service.findOne).toHaveBeenCalledWith('card123');
       expect(result).toEqual({
@@ -156,7 +156,7 @@ describe('CardController', () => {
     it('should handle card not found', async () => {
       mockCardService.findOne.mockRejectedValue(new Error('Card not found'));
 
-      await expect(controller.findOne({ id: 'nonexistent' })).rejects.toThrow(
+      await expect(controller.findOne('nonexistent')).rejects.toThrow(
         'Card not found',
       );
     });
@@ -164,7 +164,7 @@ describe('CardController', () => {
     it('should handle invalid ID format', async () => {
       mockCardService.findOne.mockRejectedValue(new Error('Invalid ID format'));
 
-      await expect(controller.findOne({ id: 'invalid' })).rejects.toThrow(
+      await expect(controller.findOne('invalid')).rejects.toThrow(
         'Invalid ID format',
       );
     });

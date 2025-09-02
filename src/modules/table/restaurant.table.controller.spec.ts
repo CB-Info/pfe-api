@@ -132,9 +132,7 @@ describe('RestaurantTableController', () => {
     it('should return a single table by ID', async () => {
       mockTableService.findOne.mockResolvedValue(mockTable);
 
-      const result = await controller.findOne({
-        id: '507f1f77bcf86cd799439011',
-      });
+      const result = await controller.findOne('507f1f77bcf86cd799439011');
 
       expect(service.findOne).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
       expect(result).toEqual({
@@ -146,7 +144,7 @@ describe('RestaurantTableController', () => {
     it('should handle table not found', async () => {
       mockTableService.findOne.mockRejectedValue(new Error('Table not found'));
 
-      await expect(controller.findOne({ id: 'nonexistent' })).rejects.toThrow(
+      await expect(controller.findOne('nonexistent')).rejects.toThrow(
         'Table not found',
       );
     });
@@ -156,7 +154,7 @@ describe('RestaurantTableController', () => {
         new Error('Invalid ID format'),
       );
 
-      await expect(controller.findOne({ id: 'invalid' })).rejects.toThrow(
+      await expect(controller.findOne('invalid')).rejects.toThrow(
         'Invalid ID format',
       );
     });
@@ -171,7 +169,7 @@ describe('RestaurantTableController', () => {
       for (const testCase of testCases) {
         mockTableService.findOne.mockResolvedValue(mockTable);
 
-        const result = await controller.findOne({ id: testCase.id });
+        const result = await controller.findOne(testCase.id);
 
         expect(service.findOne).toHaveBeenCalledWith(testCase.id);
         expect(result).toEqual({
@@ -189,7 +187,7 @@ describe('RestaurantTableController', () => {
       mockTableService.updateOne.mockResolvedValue(updatedTable);
 
       const result = await controller.updateOne(
-        { id: '507f1f77bcf86cd799439011' },
+        '507f1f77bcf86cd799439011',
         updateData,
       );
 
@@ -209,7 +207,7 @@ describe('RestaurantTableController', () => {
       mockTableService.updateOne.mockResolvedValue(updatedTable);
 
       const result = await controller.updateOne(
-        { id: '507f1f77bcf86cd799439011' },
+        '507f1f77bcf86cd799439011',
         partialUpdate,
       );
 
@@ -228,7 +226,7 @@ describe('RestaurantTableController', () => {
       mockTableService.updateOne.mockRejectedValue(new Error('Update failed'));
 
       await expect(
-        controller.updateOne({ id: '507f1f77bcf86cd799439011' }, updateData),
+        controller.updateOne('507f1f77bcf86cd799439011', updateData),
       ).rejects.toThrow('Update failed');
     });
 
@@ -239,7 +237,7 @@ describe('RestaurantTableController', () => {
       );
 
       await expect(
-        controller.updateOne({ id: 'nonexistent' }, updateData),
+        controller.updateOne('nonexistent', updateData),
       ).rejects.toThrow('Table with ID nonexistent not found');
     });
 
@@ -250,7 +248,7 @@ describe('RestaurantTableController', () => {
       );
 
       await expect(
-        controller.updateOne({ id: '507f1f77bcf86cd799439011' }, updateData),
+        controller.updateOne('507f1f77bcf86cd799439011', updateData),
       ).rejects.toThrow('Table number must be positive');
     });
   });
@@ -260,7 +258,7 @@ describe('RestaurantTableController', () => {
       mockTableService.deleteOne.mockResolvedValue(undefined);
 
       await expect(
-        controller.deleteOne({ id: '507f1f77bcf86cd799439011' }),
+        controller.deleteOne('507f1f77bcf86cd799439011'),
       ).resolves.toBeUndefined();
 
       expect(service.deleteOne).toHaveBeenCalledWith(
@@ -274,7 +272,7 @@ describe('RestaurantTableController', () => {
       );
 
       await expect(
-        controller.deleteOne({ id: '507f1f77bcf86cd799439011' }),
+        controller.deleteOne('507f1f77bcf86cd799439011'),
       ).rejects.toThrow('Deletion failed');
     });
 
@@ -283,7 +281,7 @@ describe('RestaurantTableController', () => {
         new Error('Table with ID nonexistent not found'),
       );
 
-      await expect(controller.deleteOne({ id: 'nonexistent' })).rejects.toThrow(
+      await expect(controller.deleteOne('nonexistent')).rejects.toThrow(
         'Table with ID nonexistent not found',
       );
     });
@@ -293,7 +291,7 @@ describe('RestaurantTableController', () => {
         new Error('Invalid ID format'),
       );
 
-      await expect(controller.deleteOne({ id: 'invalid-id' })).rejects.toThrow(
+      await expect(controller.deleteOne('invalid-id')).rejects.toThrow(
         'Invalid ID format',
       );
     });
@@ -304,7 +302,7 @@ describe('RestaurantTableController', () => {
       );
 
       await expect(
-        controller.deleteOne({ id: '507f1f77bcf86cd799439011' }),
+        controller.deleteOne('507f1f77bcf86cd799439011'),
       ).rejects.toThrow('Cannot delete table with active orders');
     });
 
@@ -314,7 +312,7 @@ describe('RestaurantTableController', () => {
       );
 
       await expect(
-        controller.deleteOne({ id: '507f1f77bcf86cd799439011' }),
+        controller.deleteOne('507f1f77bcf86cd799439011'),
       ).rejects.toThrow('Database connection failed');
     });
   });

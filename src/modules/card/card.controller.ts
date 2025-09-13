@@ -125,6 +125,46 @@ export class CardController {
     return { error: '', data: dtos };
   }
 
+  @Get('active')
+  @UseGuards(FirebaseTokenGuard)
+  @ApiSecurity('Bearer')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Récupérer la carte menu active',
+    description:
+      'Récupérer la carte de menu actuellement activée avec ses plats associés.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Carte active récupérée avec succès.',
+    schema: {
+      type: 'object',
+      properties: {
+        error: { type: 'string', example: '' },
+        data: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string', example: '65b3bdff2047d76f7600f160' },
+            name: { type: 'string', example: 'Menu Principal' },
+            dishesId: { type: 'array', items: { type: 'string' } },
+            isActive: { type: 'boolean', example: true },
+            dateOfCreation: { type: 'string', example: '2024-01-15 10:30:00' },
+            dateLastModified: {
+              type: 'string',
+              example: '2024-01-20 14:45:00',
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Token invalide ou expiré.' })
+  @ApiResponse({ status: 404, description: 'Aucune carte active trouvée.' })
+  async findActive(): Promise<Response<Card>> {
+    const response = await this.cardService.findActive();
+    return { error: '', data: response };
+  }
+
   @Get(':id')
   @UseGuards(FirebaseTokenGuard)
   @ApiSecurity('Bearer')

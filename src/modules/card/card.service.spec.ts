@@ -386,6 +386,42 @@ describe('CardService', () => {
     });
   });
 
+  describe('findActive', () => {
+    it('should return the active card with populated dishes', async () => {
+      const activeCard = {
+        ...mockCard,
+        isActive: true,
+      };
+      mockCardRepository.findOneBy.mockResolvedValue(activeCard);
+
+      const result = await service.findActive();
+
+      expect(repository.findOneBy).toHaveBeenCalledWith(
+        { isActive: true },
+        { populate: ['dishesId'] },
+      );
+      expect(result).toEqual(activeCard);
+    });
+
+    it('should throw NotFoundException when no active card found', async () => {
+      mockCardRepository.findOneBy.mockResolvedValue(null);
+
+      await expect(service.findActive()).rejects.toThrow(
+        new NotFoundException('No active card found'),
+      );
+    });
+
+    it('should throw InternalServerErrorException for repository errors', async () => {
+      mockCardRepository.findOneBy.mockRejectedValue(
+        new Error('Database error'),
+      );
+
+      await expect(service.findActive()).rejects.toThrow(
+        InternalServerErrorException,
+      );
+    });
+  });
+
   describe('deleteOne', () => {
     it('should delete a card successfully', async () => {
       mockCardRepository.deleteOneBy.mockResolvedValue(true);

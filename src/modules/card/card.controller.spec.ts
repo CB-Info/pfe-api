@@ -37,6 +37,7 @@ const mockCardService = {
   createOne: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn(),
+  findActive: jest.fn(),
   updateOne: jest.fn(),
   addDish: jest.fn(),
   removeDish: jest.fn(),
@@ -137,6 +138,37 @@ describe('CardController', () => {
       mockCardService.findAll.mockRejectedValue(new Error('Database error'));
 
       await expect(controller.findAll()).rejects.toThrow('Database error');
+    });
+  });
+
+  describe('findActive', () => {
+    it('should return the active card', async () => {
+      const activeCard = { ...mockCard, isActive: true };
+      mockCardService.findActive.mockResolvedValue(activeCard);
+
+      const result = await controller.findActive();
+
+      expect(service.findActive).toHaveBeenCalled();
+      expect(result).toEqual({
+        error: '',
+        data: activeCard,
+      });
+    });
+
+    it('should handle no active card found', async () => {
+      mockCardService.findActive.mockRejectedValue(
+        new Error('No active card found'),
+      );
+
+      await expect(controller.findActive()).rejects.toThrow(
+        'No active card found',
+      );
+    });
+
+    it('should handle service errors', async () => {
+      mockCardService.findActive.mockRejectedValue(new Error('Database error'));
+
+      await expect(controller.findActive()).rejects.toThrow('Database error');
     });
   });
 

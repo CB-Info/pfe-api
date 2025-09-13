@@ -149,6 +149,24 @@ export class CardService {
     }
   }
 
+  async findActive(): Promise<Card> {
+    try {
+      const response = await this.cardRepository.findOneBy(
+        { isActive: true },
+        { populate: ['dishesId'] },
+      );
+
+      if (!response) {
+        throw new NotFoundException('No active card found');
+      }
+
+      return response as Card;
+    } catch (e) {
+      console.log(e);
+      throw new InternalServerErrorException(e.message);
+    }
+  }
+
   async deleteOne(id: string) {
     try {
       const isDeleted = await this.cardRepository.deleteOneBy({ _id: id });

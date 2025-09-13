@@ -14,6 +14,7 @@ import { StockModule } from './modules/stock/stock.module';
 import { RestaurantTableModule } from './modules/table/restaurant.table.module';
 import { UserModule } from './modules/user/user.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     RestaurantTableModule,
     UserModule,
     DashboardModule,
+    NotificationsModule,
   ],
   providers: [
     {

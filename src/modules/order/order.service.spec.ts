@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderRepository } from 'src/mongo/repositories/order.repository';
+import { RestaurantTableRepository } from 'src/mongo/repositories/restaurant.table.repository';
+import { NotificationsService } from '../notifications/notifications.service';
 import { OrderStatus } from 'src/mongo/models/order.model';
 import { OrderDTO, DishOrderDTO } from 'src/dto/order.dto';
 
@@ -43,9 +45,23 @@ const mockOrderRepository = {
   deleteOneBy: jest.fn(),
 };
 
+// Mock restaurant table repository
+const mockRestaurantTableRepository = {
+  findOneBy: jest.fn(),
+};
+
+// Mock notifications service
+const mockNotificationsService = {
+  emitOrderCreated: jest.fn(),
+  emitOrderStatusUpdated: jest.fn(),
+  emitOrderReadyToServe: jest.fn(),
+};
+
 describe('OrderService', () => {
   let service: OrderService;
   let repository: OrderRepository;
+  let tableRepository: RestaurantTableRepository;
+  let notificationsService: NotificationsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -55,11 +71,24 @@ describe('OrderService', () => {
           provide: OrderRepository,
           useValue: mockOrderRepository,
         },
+        {
+          provide: RestaurantTableRepository,
+          useValue: mockRestaurantTableRepository,
+        },
+        {
+          provide: NotificationsService,
+          useValue: mockNotificationsService,
+        },
       ],
     }).compile();
 
     service = module.get<OrderService>(OrderService);
     repository = module.get<OrderRepository>(OrderRepository);
+    tableRepository = module.get<RestaurantTableRepository>(
+      RestaurantTableRepository,
+    );
+    notificationsService =
+      module.get<NotificationsService>(NotificationsService);
 
     // Reset all mocks
     jest.clearAllMocks();
@@ -82,7 +111,13 @@ describe('OrderService', () => {
         dateLastModified: '2024-01-01',
       };
 
+      const mockTable = {
+        _id: '507f1f77bcf86cd799439013',
+        number: 5,
+      };
+
       mockOrderRepository.insert.mockResolvedValue(mockCreatedOrder);
+      mockRestaurantTableRepository.findOneBy.mockResolvedValue(mockTable);
 
       const result = await service.createOne(mockOrderDto);
 
@@ -93,6 +128,13 @@ describe('OrderService', () => {
         totalPrice: mockOrderDto.totalPrice,
         tips: mockOrderDto.tips,
       });
+      expect(tableRepository.findOneBy).toHaveBeenCalledWith({
+        _id: mockOrderDto.tableNumberId,
+      });
+      expect(notificationsService.emitOrderCreated).toHaveBeenCalledWith(
+        mockCreatedOrder,
+        'Table 5',
+      );
       // toObject() is now called in the repository, not in the service
       expect(result).toEqual({
         _id: '507f1f77bcf86cd799439012',
@@ -215,10 +257,21 @@ describe('OrderService', () => {
   describe('updateOne', () => {
     it('should update an order successfully', async () => {
       const updateData = { status: OrderStatus.FINISH };
+      const currentOrder = { ...mockOrder, status: OrderStatus.PENDING };
       const updatedOrder = { ...mockOrder, ...updateData };
+      const mockTable = {
+        _id: '507f1f77bcf86cd799439013',
+        number: 5,
+      };
 
+      // Mock the initial findOne call (to get current order)
+      mockOrderRepository.findOneBy.mockResolvedValueOnce(currentOrder);
+      // Mock updateOneBy
       mockOrderRepository.updateOneBy.mockResolvedValue(true);
-      jest.spyOn(service, 'findOne').mockResolvedValue(updatedOrder as any);
+      // Mock the second findOne call (to get updated order)
+      mockOrderRepository.findOneBy.mockResolvedValueOnce(updatedOrder);
+      // Mock table lookup
+      mockRestaurantTableRepository.findOneBy.mockResolvedValue(mockTable);
 
       const result = await service.updateOne(
         '507f1f77bcf86cd799439012',
@@ -229,13 +282,18 @@ describe('OrderService', () => {
         { _id: '507f1f77bcf86cd799439012' },
         updateData,
       );
-      expect(service.findOne).toHaveBeenCalledWith('507f1f77bcf86cd799439012');
+      expect(notificationsService.emitOrderStatusUpdated).toHaveBeenCalledWith(
+        updatedOrder,
+        'Table 5',
+        OrderStatus.PENDING,
+      );
       expect(result).toEqual(updatedOrder);
     });
 
     it('should throw NotFoundException when order not found', async () => {
       const updateData = { status: OrderStatus.FINISH };
-      mockOrderRepository.updateOneBy.mockResolvedValue(false);
+      // Mock findOne to throw NotFoundException (called first in updateOne)
+      mockOrderRepository.findOneBy.mockResolvedValue(null);
 
       await expect(
         service.updateOne('nonexistent', updateData),
@@ -246,6 +304,15 @@ describe('OrderService', () => {
 
     it('should throw BadRequestException for update errors', async () => {
       const updateData = { status: OrderStatus.FINISH };
+      const mockCurrentOrder = {
+        _id: '507f1f77bcf86cd799439012',
+        status: OrderStatus.PENDING,
+        tableNumberId: '507f1f77bcf86cd799439013',
+      };
+
+      // Mock findOne to return current order
+      mockOrderRepository.findOneBy.mockResolvedValue(mockCurrentOrder);
+
       const updateError = new Error('Unable to update order');
       mockOrderRepository.updateOneBy.mockRejectedValue(updateError);
 

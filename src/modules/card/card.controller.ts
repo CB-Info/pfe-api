@@ -90,8 +90,6 @@ export class CardController {
   }
 
   @Get()
-  @UseGuards(FirebaseTokenGuard)
-  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Récupérer toutes les cartes menu',
@@ -119,15 +117,12 @@ export class CardController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Token invalide ou expiré.' })
   async findAll(): Promise<Response<Card[]>> {
     const dtos = await this.cardService.findAll();
     return { error: '', data: dtos };
   }
 
   @Get('active')
-  @UseGuards(FirebaseTokenGuard)
-  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Récupérer la carte menu active',
@@ -158,7 +153,6 @@ export class CardController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Token invalide ou expiré.' })
   @ApiResponse({ status: 404, description: 'Aucune carte active trouvée.' })
   async findActive(): Promise<Response<Card>> {
     const response = await this.cardService.findActive();

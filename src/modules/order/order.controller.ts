@@ -27,16 +27,6 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  @UseGuards(FirebaseTokenGuard, RolesGuard)
-  @Roles(
-    UserRole.CUSTOMER,
-    UserRole.WAITER,
-    UserRole.KITCHEN_STAFF,
-    UserRole.MANAGER,
-    UserRole.OWNER,
-    UserRole.ADMIN,
-  )
-  @ApiSecurity('Bearer')
   @HttpCode(HttpStatus.CREATED)
   async createOne(@Body() orderData: OrderDTO): Promise<Response<Order>> {
     const response = await this.orderService.createOne(orderData);

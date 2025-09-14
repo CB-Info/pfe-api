@@ -72,7 +72,6 @@ export class DishController {
   }
 
   @Get()
-  @UseGuards(FirebaseTokenGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Find all dishes' })
   @ApiResponse({
@@ -81,7 +80,6 @@ export class DishController {
     type: DishResponseDTO,
     isArray: true,
   })
-  @ApiSecurity('Bearer')
   async findAll(): Promise<Response<DishResponseDTO[]>> {
     const response = await this.dishService.findAll();
 
